@@ -12,6 +12,8 @@ import {
   Resize,
   ContactShadows,
   MeshPortalMaterial,
+  GizmoHelper,
+  GizmoViewport,
 } from "@react-three/drei";
 
 import {
@@ -75,13 +77,26 @@ const App = ({ images }) => {
         camera={{ fov: fov, position: [0, 2, 15] }}
         flat
       >
-        <ambientLight intensity={1} />
-        <color attach="background" args={["#ffffff"]} />
+        <ambientLight intensity={0.5} />
+        <color attach="background" args={["#4ff4f4"]} />
         {/* <fog attach="fog" args={["#000000", 0, 50]} /> */}
         {/* <TextModel position={[1.2, -0.6, 4]} rotation={[0, -Math.PI / 2, 0]} /> */}
 
-        <ProjectPlane position={[1.2, 0, 4]} rotation={[0, -Math.PI / 2, 0]} />
-
+        <ProjectPlane
+          position={[1.2, 0, 4]}
+          // rotation={[0, -Math.PI / 2, 0]}
+        />
+        <ContactShadows
+          frames={1}
+          opacity={1}
+          scale={30}
+          blur={1}
+          far={100}
+          renderOrder={-100}
+          position={[0, -0.4, 0]}
+          // resolution={256}
+          color="#000000"
+        />
         <Kreaton
           position={[0, -0.5, 4]}
           scale={0.5}
@@ -98,19 +113,26 @@ const App = ({ images }) => {
           <meshStandardMaterial color="red" />
         </mesh> */}
 
-        <group position={[0, -0.5, 0]}>
-          <Frames
-            images={images}
-            isCloseCamera={isCloseCamera}
-            farDistance={farDistance}
-            closeDistance={closeDistance}
-            farPositionX={farPositionX}
-            farPositionY={farPositionY}
-            closePositionX={closePositionX}
-            closePositionY={closePositionY}
-          />
+        <mesh
+          position={[5, 1, 5.55]}
+          scale={0.16}
+          rotation={[0, Math.PI / 2, 0]}
+        >
+          <circleGeometry args={[4, 32]} />
+          <MeshPortalMaterial>
+            <group position={[0, -0.5, 5]}>
+              <Frames
+                images={images}
+                isCloseCamera={isCloseCamera}
+                farDistance={farDistance}
+                closeDistance={closeDistance}
+                farPositionX={farPositionX}
+                farPositionY={farPositionY}
+                closePositionX={closePositionX}
+                closePositionY={closePositionY}
+              />
 
-          {/* <mesh
+              {/* <mesh
             name="moon"
             position={[0, 0, -23]}
             rotation={[-Math.PI / 2, 0, 0]}
@@ -133,7 +155,7 @@ const App = ({ images }) => {
             />
           </mesh> */}
 
-          {/* <mesh
+              {/* <mesh
             name="reflector"
             rotation={[-Math.PI / 2, 0, 0]}
             position={[0, 0.01, -18]}
@@ -152,24 +174,23 @@ const App = ({ images }) => {
               metalness={0.5}
             />
           </mesh> */}
-        </group>
-        <ContactShadows
-          frames={1}
-          opacity={1}
-          scale={10}
-          blur={1}
-          far={10}
-          position={[0, -0.6, 0]}
-          resolution={256}
-          color="#000000"
-        />
+            </group>
+          </MeshPortalMaterial>
+        </mesh>
 
         {/* <Environment preset="city" /> */}
         <OrbitControls />
-        {/* <EffectComposer> */}
-        {/* <Bloom mipmapBlur luminanceThreshold={1} intensity={1} /> */}
-        {/* No ToneMapping needed here since it's in Canvas */}
-        {/* </EffectComposer> */}
+        <EffectComposer>
+          <Bloom mipmapBlur luminanceThreshold={1} intensity={1} />
+          {/* No ToneMapping needed here since it's in Canvas */}
+        </EffectComposer>
+
+        <GizmoHelper alignment="bottom-right" margin={[80, 80]}>
+          <GizmoViewport
+            axisColors={["#9d4b4b", "#2f7f4f", "#3b5b9d"]}
+            labelColor="white"
+          />
+        </GizmoHelper>
       </Canvas>
     </>
   );

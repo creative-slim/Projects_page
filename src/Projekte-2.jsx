@@ -62,7 +62,7 @@ export function ProjectPlane(props) {
 
   return (
     <group {...props} dispose={null}>
-      <directionalLight
+      {/* <directionalLight
         ref={lightRef}
         scale={[0.5, 0.5, 3]}
         intensity={0.5} // Default intensity
@@ -72,27 +72,27 @@ export function ProjectPlane(props) {
         shadow-mapSize={[2048, 2048]}
         shadow-radius={2000} // Increased shadow radius for softer shadows
         // shadow-bias={-0.0005} // Adjusted bias to reduce shadow artifacts
-      />
+      /> */}
       <mesh
         name="Text"
         ref={textObj}
         geometry={nodes.Text.geometry}
         material={nodes.Text.material}
-        position={[3.725, 0, 0]}
+        position={[3.725, -0.9, 0]}
         rotation={[Math.PI / 2, 0, -Math.PI / 2]}
-        scale={[2.444, 6.515, 2.444]}
+        scale={[2.444, 2.444, 2.444]}
         castShadow
         receiveShadow
       >
         <meshPhysicalMaterial
           color={new Color("#F4E7D7")} // Exaggerated #F4E7D7
-          emissive={new Color("#F4E7D7")} // Emissive color
+          // emissive={new Color("#F4E7D7")} // Emissive color
           emissiveIntensity={0.5} // Emissive intensity
           toneMapped={false}
         />
       </mesh>
 
-      <mesh
+      {/* <mesh
         ref={planeObj}
         name="Plane"
         castShadow
@@ -109,7 +109,7 @@ export function ProjectPlane(props) {
           reflectivity={0.5} // Default reflectivity
           opacity={1}
         />
-      </mesh>
+      </mesh> */}
     </group>
   );
 }
