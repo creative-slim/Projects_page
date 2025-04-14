@@ -12,14 +12,14 @@ import {
   Resize,
   ContactShadows,
   MeshPortalMaterial,
-  GizmoHelper,
-  GizmoViewport,
+  Stars,
 } from "@react-three/drei";
 
 import {
   EffectComposer,
   Bloom,
   ToneMapping,
+  Vignette,
 } from "@react-three/postprocessing";
 import { useRoute, useLocation } from "wouter";
 import { easing } from "maath";
@@ -49,7 +49,7 @@ const App = ({ images }) => {
     farPositionY,
   } = useControls("Camera", {
     fov: { value: 70, min: 30, max: 120, step: 1 },
-    farDistance: { value: 15.5, min: 5, max: 30, step: 0.1 },
+    farDistance: { value: 10.5, min: 5, max: 30, step: 0.1 },
     closeDistance: { value: 5.5, min: 1, max: 10, step: 0.1 },
     farPositionX: { value: 0, min: -10, max: 10, step: 0.1 },
     farPositionY: { value: 2, min: -10, max: 10, step: 0.1 },
@@ -74,38 +74,43 @@ const App = ({ images }) => {
         shadows
         dpr={[1, 1.5]}
         gl={{ antialias: true }}
-        camera={{ fov: fov, position: [0, 2, 15] }}
+        camera={{ fov: fov, position: [0, 2, 10] }}
         flat
       >
-        <ambientLight intensity={0.5} />
-        <color attach="background" args={["#4ff4f4"]} />
-        {/* <fog attach="fog" args={["#000000", 0, 50]} /> */}
+        <Stars />
+        <ambientLight intensity={1} />
+        <pointLight
+          position={[2, 5, 4]}
+          intensity={150}
+          color={"#ffffff"}
+          castShadow
+          shadow-mapSize={[1024, 1024]}
+          shadow-camera-near={0.1}
+          shadow-camera-far={50}
+          shadow-camera-top={10}
+          shadow-camera-right={10}
+          shadow-camera-bottom={-10}
+          shadow-camera-left={-10}
+          shadow-radius={100}
+          shadow-bias={-0.0001}
+        />
+        <color attach="background" args={["#000000"]} />
+        <fog attach="fog" args={["#000000", 0, 30]} />
         {/* <TextModel position={[1.2, -0.6, 4]} rotation={[0, -Math.PI / 2, 0]} /> */}
 
-        <ProjectPlane
-          position={[1.2, 0, 4]}
-          // rotation={[0, -Math.PI / 2, 0]}
-        />
-        <ContactShadows
-          frames={1}
-          opacity={1}
-          scale={30}
-          blur={1}
-          far={100}
-          renderOrder={-100}
-          position={[0, -0.4, 0]}
-          // resolution={256}
-          color="#000000"
-        />
+        {/* <ProjectPlane position={[1.2, 0, 4]} rotation={[0, -Math.PI / 2, 0]} /> */}
+
         <Kreaton
-          position={[0, -0.5, 4]}
+          position={[0, -0.6, 4]}
           scale={0.5}
           rotation={[0, Math.PI, 0]}
         />
         <Armchair
-          position={[0, -0.5, 4]}
+          position={[0, -0.6, 4]}
           scale={0.5}
           rotation={[0, Math.PI, 0]}
+          castShadow
+          receiveShadow
         />
 
         {/* <mesh position={[-0.3, 1.48, 7.1]} rotation={[-Math.PI / 2, 0, 0]}>
@@ -113,86 +118,107 @@ const App = ({ images }) => {
           <meshStandardMaterial color="red" />
         </mesh> */}
 
-        <mesh
-          position={[5, 1, 5.55]}
-          scale={0.16}
-          rotation={[0, Math.PI / 2, 0]}
-        >
-          <circleGeometry args={[4, 32]} />
-          <MeshPortalMaterial>
-            <group position={[0, -0.5, 5]}>
-              <Frames
-                images={images}
-                isCloseCamera={isCloseCamera}
-                farDistance={farDistance}
-                closeDistance={closeDistance}
-                farPositionX={farPositionX}
-                farPositionY={farPositionY}
-                closePositionX={closePositionX}
-                closePositionY={closePositionY}
-              />
+        <group position={[0, -0.5, 0]}>
+          <Frames
+            images={images}
+            isCloseCamera={isCloseCamera}
+            farDistance={farDistance}
+            closeDistance={closeDistance}
+            farPositionX={farPositionX}
+            farPositionY={farPositionY}
+            closePositionX={closePositionX}
+            closePositionY={closePositionY}
+          />
 
-              {/* <mesh
-            name="moon"
-            position={[0, 0, -23]}
-            rotation={[-Math.PI / 2, 0, 0]}
-          >
-            <planeGeometry args={[90, 60, 64, 64]} />
-            <meshPhysicalMaterial
-              color="#444444"
-              roughness={0.8}
-              metalness={0.2}
-              map={new THREE.TextureLoader().load(
-                "/moonTexture.jpg",
-                (texture) => {
-                  texture.wrapS = texture.wrapT = THREE.RepeatWrapping;
-                  texture.repeat.set(32, 16); // Makes the texture repeat 4 times in each direction
-                }
-              )}
-              displacementMap={new THREE.TextureLoader().load("/hight1.png")}
-              displacementScale={20}
-              displacementBias={0}
-            />
-          </mesh> */}
-
-              {/* <mesh
-            name="reflector"
-            rotation={[-Math.PI / 2, 0, 0]}
-            position={[0, 0.01, -18]}
-          >
-            <planeGeometry args={[50, 50]} />
-            <MeshReflectorMaterial
-              blur={[300, 100]}
-              resolution={2048}
-              mixBlur={1}
-              mixStrength={80}
-              roughness={1}
-              depthScale={1.2}
-              minDepthThreshold={0.4}
-              maxDepthThreshold={1.4}
-              color="#050505"
-              metalness={0.5}
-            />
-          </mesh> */}
-            </group>
-          </MeshPortalMaterial>
-        </mesh>
+          <AnimatedMoon
+            position={[1, -0.74, -3]}
+            rotation={[-Math.PI / 2, 0, -Math.PI / 3]}
+            scale={0.7}
+          />
+        </group>
+        <ContactShadows
+          frames={1}
+          opacity={1}
+          scale={10}
+          blur={1}
+          far={10}
+          position={[0, -0.6, 0]}
+          resolution={256}
+          color="#000000"
+        />
 
         {/* <Environment preset="city" /> */}
         <OrbitControls />
         <EffectComposer>
-          <Bloom mipmapBlur luminanceThreshold={1} intensity={1} />
+          <Vignette eskil={false} offset={0.1} darkness={1.1} />
+
+          {/* <Bloom mipmapBlur luminanceThreshold={1} intensity={1} /> */}
           {/* No ToneMapping needed here since it's in Canvas */}
         </EffectComposer>
-
-        <GizmoHelper alignment="bottom-right" margin={[80, 80]}>
-          <GizmoViewport
-            axisColors={["#9d4b4b", "#2f7f4f", "#3b5b9d"]}
-            labelColor="white"
-          />
-        </GizmoHelper>
       </Canvas>
     </>
+  );
+};
+
+// Component to handle the moon with color animation
+const AnimatedMoon = ({ position, rotation, scale }) => {
+  const meshRef = useRef();
+  const materialRef = useRef();
+
+  // Create refs for the texture loaders with updated blobby versions
+  const colorMapRef = useRef(
+    new THREE.TextureLoader().load(
+      "/terrain_color_4x_blobby.jpg",
+      (texture) => {
+        texture.wrapS = texture.wrapT = THREE.RepeatWrapping;
+        texture.repeat.set(1, 1);
+      }
+    )
+  );
+
+  const normalMapRef = useRef(
+    new THREE.TextureLoader().load(
+      "/terrain_normal_4x_blobby.jpg",
+      (texture) => {
+        texture.wrapS = texture.wrapT = THREE.RepeatWrapping;
+        texture.repeat.set(1, 1);
+      }
+    )
+  );
+
+  const displacementMapRef = useRef(
+    new THREE.TextureLoader().load("/terrain_height_4x_blobby.jpg")
+  );
+
+  useFrame((state) => {
+    // if (materialRef.current) {
+    //   // Oscillate between purple (270) and blue (240) hues
+    //   const time = state.clock.getElapsedTime();
+    //   const hue = 230 + Math.sin(time * 0.2) * 25; // Oscillate between ~225 and ~255
+    //   materialRef.current.color = new THREE.Color(`hsl(${hue}, 70%, 50%)`);
+    // }
+  });
+
+  return (
+    <mesh
+      ref={meshRef}
+      name="moon"
+      position={position}
+      rotation={rotation}
+      scale={scale}
+    >
+      <planeGeometry args={[50, 50, 64, 64]} />
+      <meshPhysicalMaterial
+        ref={materialRef}
+        roughness={0.8}
+        metalness={0.2}
+        map={colorMapRef.current}
+        normalMap={normalMapRef.current}
+        displacementMap={displacementMapRef.current}
+        displacementScale={8}
+        displacementBias={0}
+      />
+    </mesh>
   );
 };
 

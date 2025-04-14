@@ -21,15 +21,15 @@ export const kreatonArmorMaterial = new MeshPhysicalMaterial({
 });
 
 // React component version for JSX contexts
-export function KreatonArmorMaterial(props) {
-  return (
-    <meshPhysicalMaterial
-      color={kreatonArmorColor}
-      //   roughness={0.33}
-      //   metalness={0.33}
-      //   reflectivity={0.5}
-      //   emissiveIntensity={1}
-      {...props}
-    />
-  );
-}
+// export function KreatonArmorMaterial(props) {
+//   return (
+//     <meshPhysicalMaterial
+//       color={kreatonArmorColor}
+//       //   roughness={0.33}
+//       //   metalness={0.33}
+//       //   reflectivity={0.5}
+//       //   emissiveIntensity={1}
+//       {...props}
+//     />
+//   );
+// }

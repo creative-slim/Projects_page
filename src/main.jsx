@@ -3,70 +3,81 @@ import { createRoot } from "react-dom/client";
 import "./index.css";
 import App from "./App.jsx";
 
-const pexel = (id) =>
-  `https://images.pexels.com/photos/${id}/pexels-photo-${id}.jpeg?auto=compress&cs=tinysrgb&dpr=2&h=750&w=1260`;
+export const fetchImageData = async (webhookUrl) => {
+  try {
+    const response = await fetch(webhookUrl);
 
-const images = [
+    if (!response.ok) {
+      throw new Error(
+        `Failed to fetch image data: ${response.status} ${response.statusText}`
+      );
+    }
+
+    const data = await response.json();
+    return data;
+  } catch (error) {
+    console.error("Error fetching image data:", error);
+    // Return empty array as fallback
+    return [];
+  }
+};
+
+const url =
+  "https://webhook.creative-directors.com/webhook/7bd04d17-2d35-49e1-a2aa-10b5c8ee3429";
+const endpointResponse = await fetchImageData(url);
+console.log("Endpoint Response:", endpointResponse);
+
+const oldImages = [
   // Front
   {
     position: [0, 0, 1.5],
     rotation: [0, 0, 0],
-    url: pexel(1103970),
-    name: "Front",
   },
   // Back
   {
     position: [-0.8, 0, -0.6],
     rotation: [0, 0, 0],
-    url: pexel(416430),
-    name: "Back",
   },
   {
     position: [0.8, 0, -0.6],
     rotation: [0, 0, 0],
-    url: pexel(310452),
-    name: "Back",
   },
   // Left
   {
     position: [-1.75, 0, 0.25],
     rotation: [0, Math.PI / 2.5, 0],
-    url: pexel(327482),
-
-    name: "Left",
   },
   {
     position: [-2.15, 0, 1.5],
     rotation: [0, Math.PI / 2.5, 0],
-    url: pexel(325185),
-    name: "Left",
   },
   {
     position: [-2, 0, 2.75],
     rotation: [0, Math.PI / 2.5, 0],
-    url: pexel(358574),
-    name: "Left",
   },
   // Right
   {
     position: [1.75, 0, 0.25],
     rotation: [0, -Math.PI / 2.5, 0],
-    url: pexel(227675),
-    name: "Right",
   },
   {
     position: [2.15, 0, 1.5],
     rotation: [0, -Math.PI / 2.5, 0],
-    url: pexel(911738),
-    name: "Right",
   },
   {
     position: [2, 0, 2.75],
     rotation: [0, -Math.PI / 2.5, 0],
-    url: pexel(1738986),
-    name: "Right",
   },
 ];
+const images = endpointResponse.slice(0, 9).map((image, index) => ({
+  position: oldImages[index].position,
+  rotation: oldImages[index].rotation,
+  url: image.images[0] || "https://placehold.co/600x400",
+  name: image.name,
+}));
+
+console.log("Images:", images);
+
 createRoot(document.getElementById("root")).render(
   <StrictMode>
     <App images={images} />
