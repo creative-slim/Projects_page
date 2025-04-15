@@ -22,7 +22,6 @@ import {
 import { useRoute, useLocation } from "wouter";
 import { easing } from "maath";
 import getUuid from "uuid-by-string";
-import { TextModel } from "./Projects_text_plane";
 import { useControls } from "leva";
 
 import { AccumulativeShadows, RandomizedLight } from "@react-three/drei";

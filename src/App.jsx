@@ -24,7 +24,6 @@ import {
 } from "@react-three/postprocessing";
 import { useRoute, useLocation } from "wouter";
 import getUuid from "uuid-by-string";
-import { TextModel } from "./Projects_text_plane";
 
 import { AccumulativeShadows, RandomizedLight } from "@react-three/drei";
 import { Kreaton } from "./Kreaton_A";
