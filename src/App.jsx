@@ -36,6 +36,8 @@ import { gsap } from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { Heading } from "./Site-headings";
 
+import getApiData from "./images";
+
 gsap.registerPlugin(ScrollTrigger);
 
 const GOLDENRATIO = 1.61803398875;
@@ -162,10 +164,21 @@ function SceneSetup({ projectTextRef, isZoomed }) {
   return <CameraUpdater lookAtTarget={proxyLookAtTarget} isZoomed={isZoomed} />;
 }
 
-const App = ({ images }) => {
+const App = ({}) => {
   const innerSceneRef = useRef();
   const projectTextRef = useRef();
   const [isZoomed, setIsZoomed] = useState(false); // State to track zoom
+
+  // use getApiData to fetch images
+  const [images, setImages] = useState([]);
+  useEffect(() => {
+    const fetchImages = async () => {
+      const data = await getApiData();
+      setImages(data);
+    };
+    fetchImages();
+  }, []);
+  console.log("Images:", images);
 
   return (
     <>
