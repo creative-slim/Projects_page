@@ -92,7 +92,7 @@ export default function Frames({
   // Effect to run the zoom OUT animation
   useEffect(() => {
     if (isAnimatingOut) {
-      console.log("Frames: Starting zoom OUT animation");
+      console.log("Frames : Starting zoom OUT animation");
 
       // Calculate the target quaternion for the final zoom-out state
       zoomOutTargetQ.current.copy(
