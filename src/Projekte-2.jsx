@@ -22,94 +22,28 @@ import * as THREE from "three";
 
 export function ProjectPlane(props) {
   const textObj = useRef();
-  const lightRef = useRef();
-  const planeText = useRef();
-  const planeObj = useRef();
-  const { scene, size, camera } = useThree();
+
+  const glowBlue = new MeshBasicMaterial({
+    color: new Color(1.5, 1.4, 1.3), // Exaggerated #F4E7D7
+    // color: new Color("#F4E7D7"), // Exaggerated #F4E7D7
+    toneMapped: false,
+  });
 
   const { nodes, materials } = useGLTF("/models/projekte-2-transformed.glb");
-  useHelper(lightRef, THREE.DirectionalLightHelper, 0.5, "red");
-
-  useEffect(() => {
-    const handleMouseMove = (event) => {
-      const normalizedY = (event.clientY / size.height) * 2 - 1; // Normalize mouse Y to range [-1, 1]
-      const normalizedZ = (event.clientX / size.width) * 2 - 1; // Normalize mouse X to range [-1, 1]
-      if (lightRef.current) {
-        lightRef.current.position.z = THREE.MathUtils.lerp(
-          -14, // Removed zMin
-          14, // Removed zMax
-          (normalizedZ + 1) / 2
-        ); // Map to range [zMin, zMax] for Z-axis
-      }
-    };
-    console.log(textObj.current.position);
-
-    window.addEventListener("mousemove", handleMouseMove);
-    return () => window.removeEventListener("mousemove", handleMouseMove);
-  }, [size, camera]);
-
-  useFrame(() => {
-    if (lightRef.current && textObj.current) {
-      lightRef.current.target = textObj.current; // Ensure the light targets the text object
-    }
-    // if (planeObj.current && planeObj.current.material) {
-    //   planeObj.current.material.color = new THREE.Color("#F4E7D7"); // Default plane color
-    //   planeObj.current.material.metalness = 0.16; // Default metalness
-    //   planeObj.current.material.roughness = 0.5; // Default roughness
-    //   planeObj.current.material.reflectivity = 0.5; // Default reflectivity
-    // }
-  });
 
   return (
     <group {...props} dispose={null}>
-      {/* <directionalLight
-        ref={lightRef}
-        scale={[0.5, 0.5, 3]}
-        intensity={0.5} // Default intensity
-        color={"#ffffff"} // Default color
-        position={[4, 5, 0]}
-        castShadow
-        shadow-mapSize={[2048, 2048]}
-        shadow-radius={2000} // Increased shadow radius for softer shadows
-        // shadow-bias={-0.0005} // Adjusted bias to reduce shadow artifacts
-      /> */}
       <mesh
         name="Text"
         ref={textObj}
         geometry={nodes.Text.geometry}
-        material={nodes.Text.material}
+        material={glowBlue}
         position={[3.725, -0.9, 0]}
         rotation={[Math.PI / 2, 0, -Math.PI / 2]}
         scale={[2.444, 2.444, 2.444]}
         castShadow
         receiveShadow
-      >
-        <meshPhysicalMaterial
-          color={new Color("#F4E7D7")} // Exaggerated #F4E7D7
-          // emissive={new Color("#F4E7D7")} // Emissive color
-          emissiveIntensity={0.5} // Emissive intensity
-          toneMapped={false}
-        />
-      </mesh>
-
-      {/* <mesh
-        ref={planeObj}
-        name="Plane"
-        castShadow
-        receiveShadow
-        geometry={nodes.Plane.geometry}
-        material={materials.Material}
-      >
-        <meshPhysicalMaterial
-          color={"#F4E7D7"} // Default plane color
-          // metalness={0.16} // Default metalness
-          roughness={1} // Default roughness
-          emissive={new Color("#F4E7D7")} // Emissive color
-          emissiveIntensity={0.1} // Emissive intensity
-          reflectivity={0.5} // Default reflectivity
-          opacity={1}
-        />
-      </mesh> */}
+      />
     </group>
   );
 }

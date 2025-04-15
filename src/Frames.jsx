@@ -31,13 +31,6 @@ const GOLDENRATIO = 1.61803398875;
 
 export default function Frames({
   images,
-  isCloseCamera,
-  farDistance,
-  closeDistance,
-  farPositionX,
-  farPositionY,
-  closePositionX,
-  closePositionY,
   q = new THREE.Quaternion(),
   p = new THREE.Vector3(),
 }) {
@@ -45,7 +38,6 @@ export default function Frames({
   const clicked = useRef();
   const [, params] = useRoute("/item/:id");
   const [, setLocation] = useLocation();
-
   useEffect(() => {
     clicked.current = ref.current.getObjectByName(params?.id);
     if (clicked.current) {
@@ -53,24 +45,16 @@ export default function Frames({
       clicked.current.parent.localToWorld(p.set(0, GOLDENRATIO / 2, 1.25));
       clicked.current.parent.getWorldQuaternion(q);
     } else {
-      if (isCloseCamera) {
-        p.set(closePositionX, closePositionY, closeDistance); // Close camera with full position control
-      } else {
-        p.set(farPositionX, farPositionY, farDistance); // Far camera with full position control
-      }
-      q.identity();
+      // Reset state: Set position and calculate downward tilt quaternion
+      p.set(0, 1, 5.5);
+      const lookAtTarget = new THREE.Vector3(0, -1.5, 0); // Target point slightly below origin
+      const cameraPosition = new THREE.Vector3(0, 0, 5.5); // Camera's target position
+      const up = new THREE.Vector3(0, 1, 0);
+      const rotationMatrix = new THREE.Matrix4();
+      rotationMatrix.lookAt(cameraPosition, lookAtTarget, up);
+      q.setFromRotationMatrix(rotationMatrix); // Set the target quaternion
     }
-  }, [
-    params,
-    isCloseCamera,
-    farDistance,
-    closeDistance,
-    farPositionX,
-    farPositionY,
-    closePositionX,
-    closePositionY,
-  ]);
-
+  });
   // useFrame((state, dt) => {
   //   easing.damp3(state.camera.position, p, 0.4, dt);
   //   easing.dampQ(state.camera.quaternion, q, 0.4, dt);
@@ -99,8 +83,7 @@ function Frame({ url, c = new THREE.Color(), ...props }) {
   const [, params] = useRoute("/item/:id");
   const [hovered, hover] = useState(false);
   const [rnd] = useState(() => Math.random());
-  // const name = getUuid(url);
-  const name = props.name;
+  const name = getUuid(url);
   const isActive = params?.id === name;
   useCursor(hovered);
   useFrame((state, dt) => {

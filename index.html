@@ -7,7 +7,36 @@
     <title>Vite + React</title>
   </head>
   <body>
-    <div id="root"></div>
+    <div style="position: relative">
+      <div
+        id="root"
+        style="display: block; position: sticky; top: 0; height: 100vh"
+      ></div>
+      <div
+        style="
+          height: 200vh;
+          width: 100vw;
+          background: linear-gradient(to bottom, #910808, #271e1e);
+        "
+      >
+        <div
+          id="section-1"
+          style="
+            height: 100vh;
+            width: 100vw;
+            background: linear-gradient(to bottom, #f0ff6c, #ccc);
+          "
+        ></div>
+        <div
+          id="section-2"
+          style="
+            height: 100vh;
+            width: 100vw;
+            background: linear-gradient(to bottom, #2a4ef3, #fff);
+          "
+        ></div>
+      </div>
+    </div>
     <script type="module" src="/src/main.jsx"></script>
   </body>
 </html>
