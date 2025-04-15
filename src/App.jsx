@@ -1,5 +1,5 @@
 import * as THREE from "three";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react"; // Import useState
 import { Canvas, useFrame, useThree } from "@react-three/fiber";
 import {
   useCursor,
@@ -23,7 +23,6 @@ import {
   Vignette,
 } from "@react-three/postprocessing";
 import { useRoute, useLocation } from "wouter";
-import { easing } from "maath";
 import getUuid from "uuid-by-string";
 import { TextModel } from "./Projects_text_plane";
 
@@ -33,86 +32,140 @@ import { Armchair } from "./Armchair";
 import { ProjectPlane } from "./Projekte-2";
 import Frames from "./Frames";
 
+import { gsap } from "gsap";
+import { ScrollTrigger } from "gsap/ScrollTrigger";
+import { Heading } from "./Site-headings";
+
+gsap.registerPlugin(ScrollTrigger);
+
 const GOLDENRATIO = 1.61803398875;
 
 // --- Camera Configuration ---
 const section1Position = new THREE.Vector3(0, 8, 5);
-// Note: section1LookAtTarget is dynamic based on projectTextRef,
-// but we can define a fallback or initial target if needed.
-// const section1LookAtFallback = new THREE.Vector3(0, 1, 0); // Example fallback
 const section2Position = new THREE.Vector3(0, 0.8, 7.5);
 const section2LookAtTarget = new THREE.Vector3(0, 0, -5);
 // --- End Camera Configuration ---
 
-// Define CameraRig component
-function CameraRig({ activeSection, projectTextRef }) {
+// Helper component to apply lookAt smoothly using the proxy target
+// Only applies lookAt when not zoomed into a frame
+function CameraUpdater({ lookAtTarget, isZoomed }) {
   const { camera } = useThree();
-  const targetPosition = useRef(new THREE.Vector3()).current;
-  const targetLookAt = useRef(new THREE.Vector3()).current;
-  const currentLookAt = useRef(new THREE.Vector3(0, 1, 0)).current; // Initial lookAt, lerps towards target
+  useFrame(() => {
+    // Only let GSAP control lookAt when not zoomed
+    if (!isZoomed) {
+      camera.lookAt(lookAtTarget.current);
+    }
+  });
+  return null;
+}
 
-  useFrame((state, delta) => {
-    const isSection2 = activeSection === "section2";
+// New component to handle GSAP setup and useThree hook
+function SceneSetup({ projectTextRef, isZoomed }) {
+  // Receive isZoomed prop
+  const { camera } = useThree();
+  const section1LookAtTarget = useRef(new THREE.Vector3(0, 8, -10)).current;
+  const proxyLookAtTarget = useRef(
+    new THREE.Vector3().copy(section1LookAtTarget)
+  );
+  const scrollTriggerRef = useRef(null); // Ref to store ScrollTrigger instance
 
-    // Define target position and lookAt based on activeSection using variables
-    if (isSection2) {
-      // Section 2: Use defined variables
-      targetPosition.copy(section2Position);
-      targetLookAt.copy(section2LookAtTarget);
-    } else {
-      // Section 1: Use defined variable for position
-      targetPosition.copy(section1Position);
-      // Section 1 LookAt: Still dynamic based on projectTextRef
-      if (projectTextRef && projectTextRef.current) {
-        const projectPlanePosition = projectTextRef.current.position;
-        targetLookAt.set(
-          projectPlanePosition.x,
-          projectPlanePosition.y,
-          projectPlanePosition.z
-        );
+  // GSAP ScrollTrigger setup effect
+  useEffect(() => {
+    camera.position.copy(section1Position);
+    camera.lookAt(proxyLookAtTarget.current);
+
+    const tl = gsap.timeline({
+      scrollTrigger: {
+        trigger: document.documentElement,
+        start: "top top",
+        end: "+=100%",
+        scrub: 1,
+        snap: {
+          snapTo: "labels",
+          duration: { min: 0.2, max: 1 },
+          delay: 0.1,
+          ease: "power1.inOut",
+        },
+        // markers: true,
+        // Store the instance
+        onInit: (self) => (scrollTriggerRef.current = self),
+      },
+    });
+
+    // Define animation states
+    tl.addLabel("section1")
+      .to(
+        camera.position,
+        {
+          x: section1Position.x,
+          y: section1Position.y,
+          z: section1Position.z,
+          duration: 1,
+        },
+        "section1"
+      )
+      .to(
+        proxyLookAtTarget.current,
+        {
+          x: section1LookAtTarget.x,
+          y: section1LookAtTarget.y,
+          z: section1LookAtTarget.z,
+          duration: 1,
+        },
+        "section1"
+      );
+
+    tl.addLabel("section2")
+      .to(
+        camera.position,
+        {
+          x: section2Position.x,
+          y: section2Position.y,
+          z: section2Position.z,
+          duration: 1,
+        },
+        "section2"
+      )
+      .to(
+        proxyLookAtTarget.current,
+        {
+          x: section2LookAtTarget.x,
+          y: section2LookAtTarget.y,
+          z: section2LookAtTarget.z,
+          duration: 1,
+        },
+        "section2"
+      );
+
+    return () => {
+      scrollTriggerRef.current?.kill(); // Kill on unmount
+      tl.kill();
+    };
+  }, [camera, section1LookAtTarget]);
+
+  // Effect to enable/disable ScrollTrigger based on isZoomed state
+  useEffect(() => {
+    const st = scrollTriggerRef.current; // Get the ScrollTrigger instance
+    if (st) {
+      if (isZoomed) {
+        console.log("Disabling ScrollTrigger");
+        st.disable(false); // Disable but don't revert position immediately
       } else {
-        // Use a fallback if projectTextRef isn't ready or defined
-        // targetLookAt.copy(section1LookAtFallback); // Use the fallback if defined
-        targetLookAt.set(0, 1, 0); // Or keep the simple fallback
+        console.log("Enabling ScrollTrigger and updating");
+        st.enable(); // Re-enable
+        st.update(); // Force immediate update based on scroll position
       }
     }
+  }, [isZoomed]); // Run when isZoomed changes
 
-    // Smoothly interpolate camera position
-    easing.damp3(camera.position, targetPosition, 0.5, delta); // Adjust smoothness (0.5) as needed
-
-    // Smoothly interpolate lookAt target
-    currentLookAt.lerp(targetLookAt, 0.05); // Adjust lerp factor (0.05) for lookAt smoothness
-    camera.lookAt(currentLookAt);
-  });
-
-  return null; // This component only controls the camera
+  // Pass isZoomed to CameraUpdater
+  return <CameraUpdater lookAtTarget={proxyLookAtTarget} isZoomed={isZoomed} />;
 }
 
 const App = ({ images }) => {
-  // const [isCloseCamera, setIsCloseCamera] = useState(false); // Replaced by activeSection
-  const [activeSection, setActiveSection] = useState("section1");
-
   const innerSceneRef = useRef();
   const projectTextRef = useRef();
-
-  useEffect(() => {
-    const handleScroll = () => {
-      const scrollPosition = window.scrollY;
-      const windowHeight = window.innerHeight;
-      // Example threshold: switch to section2 when scrolled past 80% of the first viewport height
-      // Adjust this logic based on your actual section markers (#section-1, #section-2) if they exist
-      const threshold = windowHeight * 0.8;
-      if (scrollPosition > threshold) {
-        setActiveSection("section2");
-      } else {
-        setActiveSection("section1");
-      }
-    };
-
-    window.addEventListener("scroll", handleScroll, { passive: true });
-    handleScroll(); // Initial check in case the page loads scrolled
-    return () => window.removeEventListener("scroll", handleScroll);
-  }, []); // Removed isCloseCamera dependency
+  const [isZoomed, setIsZoomed] = useState(false); // State to track zoom
 
   return (
     <>
@@ -120,29 +173,40 @@ const App = ({ images }) => {
         shadows
         dpr={[1, 1.5]}
         gl={{ antialias: true }}
-        // Initial camera settings - CameraRig will take over positioning
-        camera={{ fov: 50, position: [0, 10, 15] }}
+        camera={{ fov: 50, position: section1Position.toArray() }}
         flat
       >
         <color attach="background" args={["#000000"]} />
         <fog attach="fog" args={["#000000", 0, 50]} />
-        {/* Pass projectTextRef to CameraRig */}
-        <CameraRig
-          activeSection={activeSection}
-          projectTextRef={projectTextRef}
-        />
+
+        {/* Render SceneSetup inside Canvas */}
+        <SceneSetup projectTextRef={projectTextRef} isZoomed={isZoomed} />
+
         {/* <Resize width={1000} height={1000}> */}
-        <ProjectPlane
+        {/* <ProjectPlane
           ref={projectTextRef}
           rotation={[0.1, Math.PI / -2, 0]}
-          position={[0, 8, -10]} // Keep original position
+          position={[0, 8, -10]}
           scale={1}
           castShadow
           receiveShadow
+        /> */}
+
+        <Heading
+          position={[0.2, 7.8, -5]}
+          scale={2.5}
+          rotation={[Math.PI / 2, 0, 0]}
+          castShadow
         />
-        <InnerScene images={images} ref={innerSceneRef} />
+        <InnerScene
+          images={images}
+          ref={innerSceneRef}
+          setIsZoomed={setIsZoomed}
+          // Pass down section 2 camera targets
+          section2Position={section2Position}
+          section2LookAtTarget={section2LookAtTarget}
+        />
         {/* <Environment preset="city" /> */}
-        {/* OrbitControls might interfere with CameraRig, remove or disable if necessary */}
         {/* <OrbitControls /> */}
         <EffectComposer>
           <Vignette eskil={false} offset={0.1} darkness={1.1} />
@@ -216,14 +280,20 @@ const AnimatedMoon = ({ position, rotation, scale }) => {
   );
 };
 
-const InnerScene = ({ images }) => {
+// Pass props down to Frames
+const InnerScene = ({
+  images,
+  setIsZoomed,
+  section2Position,
+  section2LookAtTarget,
+}) => {
   return (
     <group name="innerScene">
       <Stars />
       <ambientLight intensity={1} />
       <pointLight
         position={[2, 5, 4]}
-        intensity={1}
+        intensity={50}
         color={"#ffffff"}
         castShadow
         shadow-mapSize={[1024, 1024]}
@@ -256,8 +326,13 @@ const InnerScene = ({ images }) => {
           </mesh> */}
 
       <group position={[0, -0.5, 0]}>
-        <Frames images={images} />
-
+        {/* Pass props to Frames */}
+        <Frames
+          images={images}
+          setIsZoomed={setIsZoomed}
+          section2Position={section2Position}
+          section2LookAtTarget={section2LookAtTarget}
+        />
         <AnimatedMoon
           position={[1, -0.74, -3]}
           rotation={[-Math.PI / 2, 0, -Math.PI / 3]}

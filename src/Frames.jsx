@@ -1,6 +1,6 @@
 import * as THREE from "three";
 import { useEffect, useRef, useState } from "react";
-import { Canvas, useFrame } from "@react-three/fiber";
+import { Canvas, useFrame, useThree } from "@react-three/fiber";
 import {
   useCursor,
   MeshReflectorMaterial,
@@ -26,49 +26,167 @@ import { TextModel } from "./Projects_text_plane";
 import { useControls } from "leva";
 
 import { AccumulativeShadows, RandomizedLight } from "@react-three/drei";
+import { gsap } from "gsap"; // Import gsap
 
 const GOLDENRATIO = 1.61803398875;
 
+// Helper function to calculate lookAt quaternion more robustly
+const calculateLookAtQuaternion = (
+  eye,
+  target,
+  up = new THREE.Vector3(0, 1, 0)
+) => {
+  const _matrix = new THREE.Matrix4(); // Use local temp variable
+  _matrix.lookAt(eye, target, up);
+  return new THREE.Quaternion().setFromRotationMatrix(_matrix);
+};
+
 export default function Frames({
   images,
-  q = new THREE.Quaternion(),
-  p = new THREE.Vector3(),
+  setIsZoomed, // Receive setIsZoomed prop
+  section2Position, // Receive section 2 position
+  section2LookAtTarget, // Receive section 2 lookAt target
 }) {
   const ref = useRef();
   const clicked = useRef();
   const [, params] = useRoute("/item/:id");
   const [, setLocation] = useLocation();
+  const { camera } = useThree();
+  const [isAnimatingOut, setIsAnimatingOut] = useState(false); // State for zoom-out animation
+
+  // Refs for animation targets
+  const finalZoomInPosition = useRef(new THREE.Vector3());
+  const frameCenterWorld = useRef(new THREE.Vector3()); // Point to look at
+  const zoomInTargetQ = useRef(new THREE.Quaternion());
+  const zoomOutTargetQ = useRef(new THREE.Quaternion()); // Store the target quaternion for zoom-out
+
+  // Effect to handle zoom IN state and target calculation
   useEffect(() => {
     clicked.current = ref.current.getObjectByName(params?.id);
     if (clicked.current) {
+      // Item is selected: Calculate zoom-in targets, set isZoomed true
       clicked.current.parent.updateWorldMatrix(true, true);
-      clicked.current.parent.localToWorld(p.set(0, GOLDENRATIO / 2, 1.25));
-      clicked.current.parent.getWorldQuaternion(q);
-    } else {
-      // Reset state: Set position and calculate downward tilt quaternion
-      p.set(0, 1, 5.5);
-      const lookAtTarget = new THREE.Vector3(0, -1.5, 0); // Target point slightly below origin
-      const cameraPosition = new THREE.Vector3(0, 0, 5.5); // Camera's target position
-      const up = new THREE.Vector3(0, 1, 0);
-      const rotationMatrix = new THREE.Matrix4();
-      rotationMatrix.lookAt(cameraPosition, lookAtTarget, up);
-      q.setFromRotationMatrix(rotationMatrix); // Set the target quaternion
+
+      // 1. Calculate the world position the camera should move TO
+      clicked.current.parent.localToWorld(
+        finalZoomInPosition.current.set(0, GOLDENRATIO / 2, 1.25) // Camera position in front of frame
+      );
+
+      // 2. Calculate the world position the camera should LOOK AT
+      clicked.current.parent.localToWorld(
+        frameCenterWorld.current.set(0, GOLDENRATIO / 2, 0.7) // Center of image plane
+      );
+
+      // 3. Calculate the target quaternion based on the final position and lookAt point
+      zoomInTargetQ.current.copy(
+        calculateLookAtQuaternion(
+          finalZoomInPosition.current,
+          frameCenterWorld.current
+        )
+      );
+
+      setIsZoomed(true); // Signal APP that we are zoomed
+      console.log("Frames: Zoomed IN, setting isZoomed = true");
     }
+    // isZoomed(false) is handled by zoom-out animation complete
+  }, [params?.id, setIsZoomed]); // Removed p, q from dependencies, using refs now
+
+  // Effect to run the zoom OUT animation
+  useEffect(() => {
+    if (isAnimatingOut) {
+      console.log("Frames: Starting zoom OUT animation");
+
+      // Calculate the target quaternion for the final zoom-out state
+      zoomOutTargetQ.current.copy(
+        calculateLookAtQuaternion(section2Position, section2LookAtTarget)
+      );
+
+      // Animate position only using GSAP
+      gsap.to(camera.position, {
+        duration: 1.2, // Adjust duration as needed
+        x: section2Position.x,
+        y: section2Position.y,
+        z: section2Position.z,
+        ease: "power1.inOut",
+        onComplete: () => {
+          // Use delayedCall to allow dampQ one more frame to settle
+          gsap.delayedCall(0.5, () => {
+            // Small delay (approx 1-2 frames)
+            console.log("Frames: Zoom OUT animation complete (after delay)");
+            // No need to manually set quaternion if dampQ finishes
+            setIsAnimatingOut(false);
+            setIsZoomed(false); // Signal APP that zoom is finished AFTER animation and delay
+          });
+        },
+      });
+    }
+  }, [
+    isAnimatingOut,
+    camera,
+    section2Position,
+    section2LookAtTarget,
+    setIsZoomed,
+  ]); // Add 'p' dependency
+
+  // useFrame for animations
+  useFrame((state, dt) => {
+    if (isAnimatingOut) {
+      // During zoom-out animation, smoothly rotate towards the target quaternion using dampQ
+      easing.dampQ(state.camera.quaternion, zoomOutTargetQ.current, 0.5, dt); // Adjust speed (0.5) as needed
+    } else if (params?.id && clicked.current) {
+      // During zoom-in animation (and while zoomed), use maath easing for position and rotation
+      easing.damp3(state.camera.position, finalZoomInPosition.current, 0.4, dt); // Move towards final position
+      easing.dampQ(state.camera.quaternion, zoomInTargetQ.current, 0.4, dt); // Rotate towards final orientation
+    }
+    // If !isAnimatingOut and !params?.id, GSAP ScrollTrigger controls the camera
   });
-  // useFrame((state, dt) => {
-  //   easing.damp3(state.camera.position, p, 0.4, dt);
-  //   easing.dampQ(state.camera.quaternion, q, 0.4, dt);
-  // });
+
+  // Effect to handle scroll UP while zoomed in
+  useEffect(() => {
+    if (params?.id) {
+      // Only listen when zoomed in
+      const handleWheel = (event) => {
+        if (event.deltaY < 0) {
+          // Scrolling UP
+          console.log("Frames: Scroll UP detected while zoomed, zooming out.");
+          event.preventDefault(); // Prevent default scroll
+          triggerZoomOut(); // Use the trigger function
+        }
+      };
+      window.addEventListener("wheel", handleWheel, { passive: false });
+      return () => window.removeEventListener("wheel", handleWheel);
+    }
+  }, [params?.id, setLocation]); // Rerun when zoom state changes
+
+  // Function to trigger zoom out
+  const triggerZoomOut = () => {
+    if (!isAnimatingOut && params?.id) {
+      // Only trigger if zoomed in and not already animating out
+      console.log("Frames: Triggering zoom out");
+      setIsAnimatingOut(true);
+      setLocation("/"); // Update route to exit item view
+    }
+  };
+
   return (
     <group
       ref={ref}
-      onClick={(e) => (
-        e.stopPropagation(),
-        setLocation(
-          clicked.current === e.object ? "/" : "/item/" + e.object.name
-        )
-      )}
-      onPointerMissed={() => setLocation("/")}
+      onClick={(e) => {
+        e.stopPropagation();
+        if (clicked.current === e.object) {
+          // Clicked active frame: Zoom out
+          triggerZoomOut();
+        } else {
+          // Clicked inactive frame: Zoom in
+          if (!isAnimatingOut) {
+            setLocation("/item/" + e.object.name);
+          }
+        }
+      }}
+      onPointerMissed={() => {
+        // Clicked background: Zoom out
+        triggerZoomOut(); // Will only run if params.id exists and not already animating
+      }}
     >
       {images.map(
         (props) => <Frame key={props.url} {...props} /> /* prettier-ignore */
@@ -145,7 +263,7 @@ function Frame({ url, c = new THREE.Color(), ...props }) {
         position={[0.55, GOLDENRATIO, 0]}
         fontSize={0.025}
       >
-        {name.split("-").join(" ")}
+        {props.name?.split("-").join(" ") || name.split("-").join(" ")}
       </Text>
     </group>
   );
