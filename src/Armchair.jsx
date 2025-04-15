@@ -7,8 +7,17 @@ Files: ./public/Armchair.glb [5.28MB] > /Users/slim-cd/Documents/_Projects/__Cre
 import React from "react";
 import { useGLTF } from "@react-three/drei";
 
+// Determine the model URL based on the environment
+const isDevelopment = import.meta.env.DEV;
+const localModelUrl = "/models/Armchair-transformed.glb";
+const remoteModelUrl =
+  "https://files.creative-directors.com/creative-website/creative25/glbs/Armchair-transformed.glb"; // Corrected remote URL if needed
+const modelUrl = isDevelopment ? localModelUrl : remoteModelUrl;
+
+console.log(`Loading model from: ${modelUrl}`); // Log which URL is being used
+
 export function Armchair(props) {
-  const { nodes, materials } = useGLTF("/models/Armchair-transformed.glb");
+  const { nodes, materials } = useGLTF(modelUrl);
   return (
     <group {...props} dispose={null}>
       <mesh
@@ -19,4 +28,4 @@ export function Armchair(props) {
   );
 }
 
-useGLTF.preload("/models/Armchair-transformed.glb");
+useGLTF.preload(modelUrl);

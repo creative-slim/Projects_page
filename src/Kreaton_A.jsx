@@ -20,9 +20,18 @@ import { NodeToyMaterial } from "@nodetoy/three-nodetoy";
 import { kreatonGoldMaterial } from "./materials/kreatonGoldMaterial";
 import { kreatonArmorMaterial } from "./materials/kreatonWhiteArmorMaterial";
 
+// Determine the model URL based on the environment
+const isDevelopment = import.meta.env.DEV;
+const localModelUrl = "/models/KreatonUV3-transformed.glb";
+const remoteModelUrl =
+  "https://files.creative-directors.com/creative-website/creative25/glbs/Kreaton_final-transformed.glb"; // Corrected remote URL if needed
+const modelUrl = isDevelopment ? localModelUrl : remoteModelUrl;
+
+console.log(`Loading model from: ${modelUrl}`); // Log which URL is being used
+
 export const Kreaton = forwardRef((props, ref) => {
   const internalRef = useRef();
-  const { scene, animations } = useGLTF("/models/KreatonUV3-transformed.glb");
+  const { scene, animations } = useGLTF(modelUrl);
   const clone = useMemo(() => SkeletonUtils.clone(scene), [scene]);
   const { nodes, materials } = useGraph(clone);
 
@@ -284,4 +293,4 @@ export const Kreaton = forwardRef((props, ref) => {
   );
 });
 
-useGLTF.preload("/models/KreatonUV3-transformed.glb");
+useGLTF.preload(modelUrl);

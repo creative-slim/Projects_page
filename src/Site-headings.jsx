@@ -11,8 +11,17 @@ import { useFrame } from "@react-three/fiber";
 import * as THREE from "three";
 import { use } from "react";
 
+// Determine the model URL based on the environment
+const isDevelopment = import.meta.env.DEV;
+const localModelUrl = "/models/site-headings.glb";
+const remoteModelUrl =
+  "https://files.creative-directors.com/creative-website/creative25/glbs/site-headings.glb"; // Corrected remote URL if needed
+const modelUrl = isDevelopment ? localModelUrl : remoteModelUrl;
+
+console.log(`Loading model from: ${modelUrl}`); // Log which URL is being used
+
 export function Heading(props) {
-  const { nodes, materials } = useGLTF("/models/site-headings.glb");
+  const { nodes, materials } = useGLTF(modelUrl);
   // materials.blau = new MeshBasicMaterial({
   //   color: new Color(0.5, 0.4, 11), // Exaggerated #F4E7D7
   //   // color: new Color("#F4E7D7"), // Exaggerated #F4E7D7
@@ -168,4 +177,4 @@ export function Heading(props) {
   );
 }
 
-useGLTF.preload("/models/site-headings.glb");
+useGLTF.preload(modelUrl);
