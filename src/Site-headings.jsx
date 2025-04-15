@@ -18,8 +18,6 @@ const remoteModelUrl =
   "https://files.creative-directors.com/creative-website/creative25/glbs/site-headings.glb"; // Corrected remote URL if needed
 const modelUrl = isDevelopment ? localModelUrl : remoteModelUrl;
 
-console.log(`Loading model from: ${modelUrl}`); // Log which URL is being used
-
 export function Heading(props) {
   const { nodes, materials } = useGLTF(modelUrl);
   // materials.blau = new MeshBasicMaterial({
