@@ -47,6 +47,25 @@ const section2Position = new THREE.Vector3(0, 0.8, 7.5);
 const section2LookAtTarget = new THREE.Vector3(0, 0, -5);
 // --- End Camera Configuration ---
 
+// Determine the model URL based on the environment
+const isDevelopment = import.meta.env.DEV;
+const localimages = {
+  color: "/terrain_color_4x_blobby.jpg",
+  normal: "/terrain_normal_4x_blobby.jpg",
+  height: "/terrain_height_4x_blobby.jpg",
+};
+const remoteImages = {
+  color:
+    "https://files.creative-directors.com/creative-website/creative25/scenes_imgs/terrain_color_4x_blobby.jpg",
+  normal:
+    "https://files.creative-directors.com/creative-website/creative25/scenes_imgs/terrain_normal_4x_blobby.jpg",
+  height:
+    "https://files.creative-directors.com/creative-website/creative25/scenes_imgs/terrain_height_4x_blobby.jpg",
+};
+const img = isDevelopment ? localimages : remoteImages;
+
+console.log(`Loading model from: ${img}`); // Log which URL is being used
+
 // Helper component to apply lookAt smoothly using the proxy target
 // Only applies lookAt when not zoomed into a frame
 function CameraUpdater({ lookAtTarget, isZoomed }) {
@@ -237,28 +256,20 @@ const AnimatedMoon = ({ position, rotation, scale }) => {
 
   // Create refs for the texture loaders with updated blobby versions
   const colorMapRef = useRef(
-    new THREE.TextureLoader().load(
-      "/terrain_color_4x_blobby.jpg",
-      (texture) => {
-        texture.wrapS = texture.wrapT = THREE.RepeatWrapping;
-        texture.repeat.set(1, 1);
-      }
-    )
+    new THREE.TextureLoader().load(img.color, (texture) => {
+      texture.wrapS = texture.wrapT = THREE.RepeatWrapping;
+      texture.repeat.set(1, 1);
+    })
   );
 
   const normalMapRef = useRef(
-    new THREE.TextureLoader().load(
-      "/terrain_normal_4x_blobby.jpg",
-      (texture) => {
-        texture.wrapS = texture.wrapT = THREE.RepeatWrapping;
-        texture.repeat.set(1, 1);
-      }
-    )
+    new THREE.TextureLoader().load(img.normal, (texture) => {
+      texture.wrapS = texture.wrapT = THREE.RepeatWrapping;
+      texture.repeat.set(1, 1);
+    })
   );
 
-  const displacementMapRef = useRef(
-    new THREE.TextureLoader().load("/terrain_height_4x_blobby.jpg")
-  );
+  const displacementMapRef = useRef(new THREE.TextureLoader().load(img.height));
 
   useFrame((state) => {
     // if (materialRef.current) {
