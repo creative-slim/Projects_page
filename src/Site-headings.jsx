@@ -9,7 +9,6 @@ import { Color, MeshBasicMaterial, ShaderMaterial } from "three";
 import { useEffect } from "react";
 import { useFrame } from "@react-three/fiber";
 import * as THREE from "three";
-import { use } from "react";
 
 // Determine the model URL based on the environment
 const isDevelopment = import.meta.env.DEV;
