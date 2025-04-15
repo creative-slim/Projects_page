@@ -22,7 +22,6 @@ import {
 import { useRoute, useLocation } from "wouter";
 import { easing } from "maath";
 import getUuid from "uuid-by-string";
-import { useControls } from "leva";
 
 import { AccumulativeShadows, RandomizedLight } from "@react-three/drei";
 import { gsap } from "gsap"; // Import gsap
@@ -85,7 +84,7 @@ export default function Frames({
       );
 
       setIsZoomed(true); // Signal APP that we are zoomed
-      console.log("Frames: Zoomed IN, setting isZoomed = true");
+      console.log("Frames : Zoomed IN, setting isZoomed = true");
     }
     // isZoomed(false) is handled by zoom-out animation complete
   }, [params?.id, setIsZoomed]); // Removed p, q from dependencies, using refs now
