@@ -12,6 +12,7 @@ import {
   Resize,
   ContactShadows,
   MeshPortalMaterial,
+  Svg,
 } from "@react-three/drei";
 
 import {
@@ -38,19 +39,28 @@ const calculateLookAtQuaternion = (
   _matrix.lookAt(eye, target, up);
   return new THREE.Quaternion().setFromRotationMatrix(_matrix);
 };
+const clearActiveProjectClasses = () => {
+  console.log("Clearing active project classes");
+  const allProjectElements = document.querySelectorAll("[data-projects]");
+  allProjectElements.forEach((el) => {
+    el.classList.remove("active");
+  });
+};
 
 export default function Frames({
   images,
   setIsZoomed, // Receive setIsZoomed prop
   section2Position, // Receive section 2 position
   section2LookAtTarget, // Receive section 2 lookAt target
+  initialFov, // Receive initial FOV
 }) {
   const ref = useRef();
   const clicked = useRef();
   const [, params] = useRoute("/item/:id");
   const [, setLocation] = useLocation();
-  const { camera } = useThree();
+  const { camera } = useThree(); // Get camera instance here
   const [isAnimatingOut, setIsAnimatingOut] = useState(false); // State for zoom-out animation
+  const targetFovRef = useRef(initialFov); // Ref to store target FOV
 
   // Refs for animation targets
   const finalZoomInPosition = useRef(new THREE.Vector3());
@@ -84,10 +94,13 @@ export default function Frames({
       );
 
       setIsZoomed(true); // Signal APP that we are zoomed
-      console.log("Frames : Zoomed IN, setting isZoomed = true");
+      targetFovRef.current = 70; // Set TARGET FOV for zoom in
+      console.log(
+        "Frames : Zoomed IN, setting isZoomed = true, target FOV = 100"
+      );
     }
-    // isZoomed(false) is handled by zoom-out animation complete
-  }, [params?.id, setIsZoomed]); // Removed p, q from dependencies, using refs now
+    // Target FOV reset is handled by zoom-out trigger
+  }, [params?.id, setIsZoomed, camera, initialFov]); // Add camera and initialFov to dependencies, remove setFov
 
   // Effect to run the zoom OUT animation
   useEffect(() => {
@@ -111,6 +124,7 @@ export default function Frames({
           gsap.delayedCall(0.5, () => {
             // Small delay (approx 1-2 frames)
             console.log("Frames: Zoom OUT animation complete (after delay)");
+            clearActiveProjectClasses(); // Clear active classes
             // No need to manually set quaternion if dampQ finishes
             setIsAnimatingOut(false);
             setIsZoomed(false); // Signal APP that zoom is finished AFTER animation and delay
@@ -126,8 +140,15 @@ export default function Frames({
     setIsZoomed,
   ]); // Add 'p' dependency
 
-  // useFrame for animations
+  // useFrame for animations (including FOV)
   useFrame((state, dt) => {
+    // Animate FOV towards the target value
+    const fovChanged = Math.abs(state.camera.fov - targetFovRef.current) > 0.01;
+    if (fovChanged) {
+      easing.damp(state.camera, "fov", targetFovRef.current, 0.4, dt);
+      state.camera.updateProjectionMatrix(); // Update projection matrix if FOV changed
+    }
+
     if (isAnimatingOut) {
       // During zoom-out animation, smoothly rotate towards the target quaternion using dampQ
       easing.dampQ(state.camera.quaternion, zoomOutTargetQ.current, 0.5, dt); // Adjust speed (0.5) as needed
@@ -160,7 +181,8 @@ export default function Frames({
   const triggerZoomOut = () => {
     if (!isAnimatingOut && params?.id) {
       // Only trigger if zoomed in and not already animating out
-      console.log("Frames: Triggering zoom out");
+      console.log("Frames: Triggering zoom out, setting target FOV");
+      targetFovRef.current = initialFov; // Set TARGET FOV for zoom out
       setIsAnimatingOut(true);
       setLocation("/"); // Update route to exit item view
     }
@@ -196,6 +218,7 @@ export default function Frames({
 function Frame({ url, c = new THREE.Color(), ...props }) {
   const image = useRef();
   const frame = useRef();
+  const linkRef = useRef();
   const [, params] = useRoute("/item/:id");
   const [hovered, hover] = useState(false);
   const [rnd] = useState(() => Math.random());
@@ -222,6 +245,36 @@ function Frame({ url, c = new THREE.Color(), ...props }) {
       dt
     );
   });
+
+  const handleLinkClick = (e) => {
+    // e.stopPropagation(); // Keep commented out if the parent group click should still function
+    console.log("Frame clicked, handling link logic:", props);
+    if (props.slug) {
+      const targetSelector = `[data-projects="${props.slug}"]`;
+      const targetElement = document.querySelector(targetSelector);
+
+      if (targetElement) {
+        console.log("Found target element:", targetElement);
+
+        // Remove 'active' class from all elements with data-projects attribute
+        const allProjectElements = document.querySelectorAll("[data-projects]");
+        allProjectElements.forEach((el) => {
+          el.classList.remove("active");
+        });
+
+        // Add 'active' class to the clicked element
+        targetElement.classList.add("active");
+
+        // Optional: Scroll to the target element
+        // targetElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      } else {
+        console.warn(`Element with data-projects="${props.slug}" not found.`);
+      }
+    } else {
+      console.warn("Slug prop is missing from Frame component.");
+    }
+  };
+
   return (
     <group {...props}>
       <mesh
@@ -230,6 +283,7 @@ function Frame({ url, c = new THREE.Color(), ...props }) {
         onPointerOut={() => hover(false)}
         scale={[1, GOLDENRATIO, 0.05]}
         position={[0, GOLDENRATIO / 2, 0]}
+        onClick={handleLinkClick} // This mesh triggers the function
       >
         <boxGeometry />
         <meshStandardMaterial
@@ -253,13 +307,60 @@ function Frame({ url, c = new THREE.Color(), ...props }) {
           position={[0, 0, 0.7]}
           url={url}
         />
+
+        {/* Add onClick handler to this group */}
+        {/* <group ref={linkRef} position={[0, -0.01, 0]} onClick={handleLinkClick}>
+          <mesh position={[0, -0.43, 0.8]} scale={[0.95, 0.08, 1]}>
+            <planeGeometry args={[1, 1, 1, 1]} />
+            <meshBasicMaterial
+              color="#121124"
+              opacity={1}
+              raycast={() => null}
+            />
+          </mesh>
+          <group
+            position={[0, -0.43, 0.7]}
+            scale={[1, 1, 1]}
+            raycast={() => null}
+          >
+            <Text
+              fontSize={0.04}
+              anchorX="left"
+              position={[-0.45, 0, 0.2]}
+              material-toneMapped={false}
+              raycast={() => null} // Make text non-interactive if needed
+            >
+              {props.name?.split("-").join(" ") || name.split("-").join(" ")}
+            </Text>
+            <Text
+              fontSize={0.04}
+              anchorX="right"
+              position={[0.4, 0, 0.2]}
+              material-toneMapped={false}
+              raycast={() => null} // Make text non-interactive if needed
+            >
+              DETAILS
+            </Text>
+            <Text
+              fontSize={0.04}
+              anchorX="right"
+              position={[0.45, 0.01, 0.2]}
+              material-toneMapped={false}
+              raycast={() => null} // Make text non-interactive if needed
+              fontStyle="uppercase"
+              rotation={[0, 0, Math.PI / 4]} // Rotate 45 degrees around Z-axis
+            >
+              ➜
+            </Text>
+          </group>
+        </group> */}
       </mesh>
       <Text
         maxWidth={0.1}
         anchorX="left"
         anchorY="top"
         position={[0.55, GOLDENRATIO, 0]}
-        fontSize={0.025}
+        fontSize={0.03}
       >
         {props.name?.split("-").join(" ") || name.split("-").join(" ")}
       </Text>

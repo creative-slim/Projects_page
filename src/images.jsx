@@ -52,6 +52,7 @@ const getApiData = async () => {
     rotation: oldImages[index].rotation,
     url: image.images[0] || "https://placehold.co/600x400",
     name: image.name,
+    slug: image.slug,
   }));
 
   return images;

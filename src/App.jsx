@@ -40,6 +40,7 @@ import getApiData from "./images";
 gsap.registerPlugin(ScrollTrigger);
 
 const GOLDENRATIO = 1.61803398875;
+const INITIAL_FOV = 50; // Define initial FOV
 
 // --- Camera Configuration ---
 const section1Position = new THREE.Vector3(0, 8, 5);
@@ -80,7 +81,8 @@ function CameraUpdater({ lookAtTarget, isZoomed }) {
 }
 
 // New component to handle GSAP setup and useThree hook
-function SceneSetup({ projectTextRef, isZoomed }) {
+function SceneSetup({ projectTextRef, isZoomed, headingRef }) {
+  // Add headingRef prop
   // Receive isZoomed prop
   const { camera } = useThree();
   const section1LookAtTarget = useRef(new THREE.Vector3(0, 8, -10)).current;
@@ -101,7 +103,7 @@ function SceneSetup({ projectTextRef, isZoomed }) {
         end: "+=100%",
         scrub: 1,
         snap: {
-          snapTo: "labels",
+          snapTo: "labels", // Re-enable snapTo
           duration: { min: 0.2, max: 1 },
           delay: 0.1,
           ease: "power1.inOut",
@@ -134,6 +136,15 @@ function SceneSetup({ projectTextRef, isZoomed }) {
         },
         "section1"
       );
+    // Add heading animation starting slightly after section1 label
+    // .to(
+    //   headingRef.current.position,
+    //   {
+    //     y: 17.8, // Move heading up by 10 (original y was 7.8)
+    //     duration: 1, // Match camera duration
+    //   },
+    //   "section1+=0.01" // Start just a fraction after the camera starts moving
+    // );
 
     tl.addLabel("section2")
       .to(
@@ -161,7 +172,7 @@ function SceneSetup({ projectTextRef, isZoomed }) {
       scrollTriggerRef.current?.kill(); // Kill on unmount
       tl.kill();
     };
-  }, [camera, section1LookAtTarget]);
+  }, [camera, section1LookAtTarget, headingRef]); // Add headingRef dependency
 
   // Effect to enable/disable ScrollTrigger based on isZoomed state
   useEffect(() => {
@@ -185,6 +196,7 @@ function SceneSetup({ projectTextRef, isZoomed }) {
 const App = ({}) => {
   const innerSceneRef = useRef();
   const projectTextRef = useRef();
+  const headingRef = useRef(); // Create ref for Heading
   const [isZoomed, setIsZoomed] = useState(false); // State to track zoom
 
   // use getApiData to fetch images
@@ -204,14 +216,18 @@ const App = ({}) => {
         shadows
         dpr={[1, 1.5]}
         gl={{ antialias: true }}
-        camera={{ fov: 50, position: section1Position.toArray() }}
+        camera={{ fov: INITIAL_FOV, position: section1Position.toArray() }} // Use INITIAL_FOV directly
         flat
       >
         <color attach="background" args={["#000000"]} />
         <fog attach="fog" args={["#000000", 0, 50]} />
 
-        {/* Render SceneSetup inside Canvas */}
-        <SceneSetup projectTextRef={projectTextRef} isZoomed={isZoomed} />
+        {/* Render SceneSetup inside Canvas, pass headingRef */}
+        <SceneSetup
+          projectTextRef={projectTextRef}
+          isZoomed={isZoomed}
+          headingRef={headingRef}
+        />
 
         {/* <Resize width={1000} height={1000}> */}
         {/* <ProjectPlane
@@ -224,6 +240,7 @@ const App = ({}) => {
         /> */}
 
         <Heading
+          ref={headingRef} // Assign ref to Heading
           position={[0.2, 7.8, -5]}
           scale={2.5}
           rotation={[Math.PI / 2, 0, 0]}
@@ -236,6 +253,8 @@ const App = ({}) => {
           // Pass down section 2 camera targets
           section2Position={section2Position}
           section2LookAtTarget={section2LookAtTarget}
+          // Pass down FOV related props
+          initialFov={INITIAL_FOV}
         />
         {/* <Environment preset="city" /> */}
         {/* <OrbitControls /> */}
@@ -309,6 +328,7 @@ const InnerScene = ({
   setIsZoomed,
   section2Position,
   section2LookAtTarget,
+  initialFov, // Receive initialFov
 }) => {
   return (
     <group name="innerScene">
@@ -355,6 +375,7 @@ const InnerScene = ({
           setIsZoomed={setIsZoomed}
           section2Position={section2Position}
           section2LookAtTarget={section2LookAtTarget}
+          initialFov={initialFov} // Pass initialFov down
         />
         <AnimatedMoon
           position={[1, -0.74, -3]}
