@@ -26,6 +26,7 @@ import getUuid from "uuid-by-string";
 
 import { AccumulativeShadows, RandomizedLight } from "@react-three/drei";
 import { gsap } from "gsap"; // Import gsap
+import Portal from './Portal';
 
 const GOLDENRATIO = 1.61803398875;
 
@@ -236,6 +237,48 @@ function Frame({ url, c = new THREE.Color(), ...props }) {
     new Float32Array(50 * 3).map(() => (Math.random() - 0.5) * 0.001)
   );
 
+  // Custom shader for gradient rings
+  const gradientShader = {
+    uniforms: {
+      time: { value: 0 },
+      colors: {
+        value: [
+          new THREE.Color("#4a9eff"),
+          new THREE.Color("#00ffaa"),
+          new THREE.Color("#ff4a9e")
+        ]
+      }
+    },
+    vertexShader: `
+      varying vec2 vUv;
+      void main() {
+        vUv = uv;
+        gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
+      }
+    `,
+    fragmentShader: `
+      uniform float time;
+      uniform vec3 colors[3];
+      varying vec2 vUv;
+      
+      void main() {
+        vec2 center = vec2(0.5, 0.5);
+        vec2 pos = vUv - center;
+        float angle = atan(pos.y, pos.x) + time;
+        float normalizedAngle = (angle + 3.14159) / (2.0 * 3.14159);
+        
+        // Create gradient based on angle
+        vec3 color = mix(
+          mix(colors[0], colors[1], smoothstep(0.0, 0.5, normalizedAngle)),
+          mix(colors[1], colors[2], smoothstep(0.5, 1.0, normalizedAngle)),
+          smoothstep(0.0, 1.0, normalizedAngle)
+        );
+        
+        gl_FragColor = vec4(color, 0.4);
+      }
+    `
+  };
+
   useFrame((state, dt) => {
     image.current.material.zoom =
       2 + Math.sin(rnd * 10000 + state.clock.elapsedTime / 3) / 2;
@@ -255,6 +298,15 @@ function Frame({ url, c = new THREE.Color(), ...props }) {
       0.1,
       dt
     );
+
+    // Update shader time uniform
+    if (portalRef.current) {
+      portalRef.current.children.forEach(child => {
+        if (child.material.uniforms) {
+          child.material.uniforms.time.value = state.clock.elapsedTime * 0.2;
+        }
+      });
+    }
 
     // Animate particles with random movement
     if (particlesRef.current) {
@@ -359,61 +411,28 @@ function Frame({ url, c = new THREE.Color(), ...props }) {
           position={[0, 0, 0.7]}
           url={url}
         />
-        <group ref={portalRef} position={[0, 0, 0.1]}>
-          {/* Outer ring */}
-          <mesh position={[0, 0, -0.01]} raycast={() => null}>
-            <ringGeometry args={[0.9, 1.0, 64]} />
-            <meshBasicMaterial
-              color="#4a9eff"
-              transparent
-              opacity={0.4}
-              side={THREE.DoubleSide}
+        {/* Portal effect wraps the frame */}
+        <Portal position={[0, 0, 0.35]} scale={[1, GOLDENRATIO, 1]} />
+        {/* Energy particles */}
+        <points ref={particlesRef} raycast={() => null}>
+          <bufferGeometry>
+            <bufferAttribute
+              attach="attributes-position"
+              count={50}
+              array={particlePositions.current}
+              itemSize={3}
             />
-          </mesh>
-
-          {/* Middle ring */}
-          <mesh position={[0, 0, -0.02]} raycast={() => null}>
-            <ringGeometry args={[0.8, 0.9, 64]} />
-            <meshBasicMaterial
-              color="#00ffaa"
-              transparent
-              opacity={0.4}
-              side={THREE.DoubleSide}
-            />
-          </mesh>
-
-          {/* Inner ring */}
-          <mesh position={[0, 0, -0.03]} raycast={() => null}>
-            <ringGeometry args={[0.7, 0.8, 64]} />
-            <meshBasicMaterial
-              color="#ff4a9e"
-              transparent
-              opacity={0.4}
-              side={THREE.DoubleSide}
-            />
-          </mesh>
-
-          {/* Energy particles */}
-          <points ref={particlesRef} raycast={() => null}>
-            <bufferGeometry>
-              <bufferAttribute
-                attach="attributes-position"
-                count={50}
-                array={particlePositions.current}
-                itemSize={3}
-              />
-            </bufferGeometry>
-            <pointsMaterial
-              color="#ffffff"
-              size={0.02}
-              transparent
-              opacity={0.8}
-              sizeAttenuation
-              blending={THREE.AdditiveBlending}
-              depthWrite={false}
-            />
-          </points>
-        </group>
+          </bufferGeometry>
+          <pointsMaterial
+            color="#ffffff"
+            size={0.02}
+            transparent
+            opacity={0.8}
+            sizeAttenuation
+            blending={THREE.AdditiveBlending}
+            depthWrite={false}
+          />
+        </points>
       </mesh>
       <Text
         maxWidth={0.1}
