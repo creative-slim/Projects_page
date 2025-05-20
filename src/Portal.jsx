@@ -41,9 +41,9 @@ const getGradientShader = (opacity = 0.7) => ({
  */
 export default function Portal({
     configs = [
-        { radius: 0.52, tube: 0.045, opacity: 0.7 },
-        { radius: 0.60, tube: 0.025, opacity: 0.4 },
-        { radius: 0.68, tube: 0.012, opacity: 0.2 }
+        { radius: 0.48, tube: 0.045, opacity: 0.7 },
+        { radius: 0.56, tube: 0.025, opacity: 0.4 },
+        { radius: 0.62, tube: 0.012, opacity: 0.2 }
     ],
     position = [0, 0, 0],
     scale = [1, 1, 1]

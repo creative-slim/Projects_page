@@ -193,7 +193,7 @@ function SceneSetup({ projectTextRef, isZoomed, headingRef }) {
   return <CameraUpdater lookAtTarget={proxyLookAtTarget} isZoomed={isZoomed} />;
 }
 
-const App = ({}) => {
+const App = ({ }) => {
   const innerSceneRef = useRef();
   const projectTextRef = useRef();
   const headingRef = useRef(); // Create ref for Heading
@@ -354,14 +354,14 @@ const InnerScene = ({
 
       {/* <ProjectPlane position={[1.2, 0, 4]} rotation={[0, -Math.PI / 2, 0]} /> */}
 
-      <Kreaton position={[0, -0.6, 4]} scale={0.5} rotation={[0, Math.PI, 0]} />
-      <Armchair
+      {/* <Kreaton position={[0, -0.6, 4]} scale={0.5} rotation={[0, Math.PI, 0]} /> */}
+      {/* <Armchair
         position={[0, -0.6, 4]}
         scale={0.5}
         rotation={[0, Math.PI, 0]}
         castShadow
         receiveShadow
-      />
+      /> */}
 
       {/* <mesh position={[-0.3, 1.48, 7.1]} rotation={[-Math.PI / 2, 0, 0]}>
           <sphereGeometry args={[0.4, 32, 32]} />

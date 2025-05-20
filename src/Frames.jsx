@@ -292,12 +292,15 @@ function Frame({ url, c = new THREE.Color(), ...props }) {
       0.1,
       dt
     );
-    easing.dampC(
-      frame.current.material.color,
-      hovered ? "orange" : "white",
-      0.1,
-      dt
-    );
+    // Safely update frame color if frame.current exists
+    if (frame.current && frame.current.material) {
+      easing.dampC(
+        frame.current.material.color,
+        hovered ? "orange" : "white",
+        0.1,
+        dt
+      );
+    }
 
     // Update shader time uniform
     if (portalRef.current) {
@@ -382,6 +385,7 @@ function Frame({ url, c = new THREE.Color(), ...props }) {
   return (
     <group {...props}>
       <mesh
+        visible={true}
         name={name}
         onPointerOver={(e) => (e.stopPropagation(), hover(true))}
         onPointerOut={() => hover(false)}
@@ -391,27 +395,25 @@ function Frame({ url, c = new THREE.Color(), ...props }) {
       >
         <boxGeometry />
         <meshStandardMaterial
-          color="#151515"
-          metalness={0.5}
-          roughness={0.5}
-          envMapIntensity={2}
+          transparent
+          opacity={0}
         />
-        <mesh
-          ref={frame}
-          raycast={() => null}
-          scale={[0.9, 0.93, 0.9]}
-          position={[0, 0, 0.2]}
-        >
-          <boxGeometry />
-          <meshBasicMaterial toneMapped={false} fog={false} />
+        {/* Subtle inner rim in front of the image for portal depth */}
+        <mesh position={[0, 0, 0.81]} scale={[0.72, 0.72 * GOLDENRATIO, 1]} raycast={() => null}>
+          <ringGeometry args={[0.34, 0.37, 64]} />
+          <meshBasicMaterial color="#fff" opacity={0.18} transparent blending={THREE.AdditiveBlending} />
+        </mesh>
+        {/* Subtle glow behind the image */}
+        <mesh position={[0, 0, 0.65]} scale={[0.7, 0.7 * GOLDENRATIO, 1]} raycast={() => null}>
+          <ringGeometry args={[0.28, 0.36, 64]} />
+          <meshBasicMaterial color="#fff8b0" opacity={0.10} transparent blending={THREE.AdditiveBlending} />
         </mesh>
         <Image
           raycast={() => null}
           ref={image}
-          position={[0, 0, 0.7]}
+          position={[0, 0, 0.75]} // Move image slightly back so it's inside the portal
           url={url}
         />
-        {/* Portal effect wraps the frame */}
         <Portal position={[0, 0, 0.35]} scale={[1, GOLDENRATIO, 1]} />
         {/* Energy particles */}
         <points ref={particlesRef} raycast={() => null}>
