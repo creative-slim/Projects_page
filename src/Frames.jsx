@@ -219,12 +219,23 @@ function Frame({ url, c = new THREE.Color(), ...props }) {
   const image = useRef();
   const frame = useRef();
   const linkRef = useRef();
+  const portalRef = useRef();
+  const particlesRef = useRef();
   const [, params] = useRoute("/item/:id");
   const [hovered, hover] = useState(false);
   const [rnd] = useState(() => Math.random());
   const name = getUuid(url);
   const isActive = params?.id === name;
   useCursor(hovered);
+
+  // Create initial particle positions and velocities
+  const particlePositions = useRef(
+    new Float32Array(50 * 3).map(() => (Math.random() - 0.5) * 2)
+  );
+  const particleVelocities = useRef(
+    new Float32Array(50 * 3).map(() => (Math.random() - 0.5) * 0.001)
+  );
+
   useFrame((state, dt) => {
     image.current.material.zoom =
       2 + Math.sin(rnd * 10000 + state.clock.elapsedTime / 3) / 2;
@@ -244,10 +255,56 @@ function Frame({ url, c = new THREE.Color(), ...props }) {
       0.1,
       dt
     );
+
+    // Animate particles with random movement
+    if (particlesRef.current) {
+      const positions = particlesRef.current.geometry.attributes.position.array;
+      const velocities = particleVelocities.current;
+
+      for (let i = 0; i < positions.length; i += 3) {
+        // Update positions based on velocities
+        positions[i] += velocities[i];
+        positions[i + 1] += velocities[i + 1];
+        positions[i + 2] += velocities[i + 2];
+
+        // Add some random acceleration
+        velocities[i] += (Math.random() - 0.5) * 0.0005;
+        velocities[i + 1] += (Math.random() - 0.5) * 0.0005;
+        velocities[i + 2] += (Math.random() - 0.5) * 0.0005;
+
+        // Dampen velocities
+        velocities[i] *= 0.995;
+        velocities[i + 1] *= 0.995;
+        velocities[i + 2] *= 0.995;
+
+        // Keep particles within bounds
+        const maxRadius = 1.2;
+        const distance = Math.sqrt(
+          positions[i] * positions[i] +
+          positions[i + 1] * positions[i + 1]
+        );
+
+        if (distance > maxRadius) {
+          const angle = Math.atan2(positions[i + 1], positions[i]);
+          positions[i] = Math.cos(angle) * maxRadius;
+          positions[i + 1] = Math.sin(angle) * maxRadius;
+
+          // Bounce off the boundary
+          velocities[i] *= -0.2;
+          velocities[i + 1] *= -0.2;
+        }
+
+        // Keep z position within bounds
+        if (Math.abs(positions[i + 2]) > 0.2) {
+          positions[i + 2] = Math.sign(positions[i + 2]) * 0.2;
+          velocities[i + 2] *= -0.2;
+        }
+      }
+      particlesRef.current.geometry.attributes.position.needsUpdate = true;
+    }
   });
 
   const handleLinkClick = (e) => {
-    // e.stopPropagation(); // Keep commented out if the parent group click should still function
     console.log("Frame clicked, handling link logic:", props);
     if (props.slug) {
       const targetSelector = `[data-projects="${props.slug}"]`;
@@ -256,17 +313,12 @@ function Frame({ url, c = new THREE.Color(), ...props }) {
       if (targetElement) {
         console.log("Found target element:", targetElement);
 
-        // Remove 'active' class from all elements with data-projects attribute
         const allProjectElements = document.querySelectorAll("[data-projects]");
         allProjectElements.forEach((el) => {
           el.classList.remove("active");
         });
 
-        // Add 'active' class to the clicked element
         targetElement.classList.add("active");
-
-        // Optional: Scroll to the target element
-        // targetElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
       } else {
         console.warn(`Element with data-projects="${props.slug}" not found.`);
       }
@@ -283,7 +335,7 @@ function Frame({ url, c = new THREE.Color(), ...props }) {
         onPointerOut={() => hover(false)}
         scale={[1, GOLDENRATIO, 0.05]}
         position={[0, GOLDENRATIO / 2, 0]}
-        onClick={handleLinkClick} // This mesh triggers the function
+        onClick={handleLinkClick}
       >
         <boxGeometry />
         <meshStandardMaterial
@@ -307,53 +359,61 @@ function Frame({ url, c = new THREE.Color(), ...props }) {
           position={[0, 0, 0.7]}
           url={url}
         />
-
-        {/* Add onClick handler to this group */}
-        {/* <group ref={linkRef} position={[0, -0.01, 0]} onClick={handleLinkClick}>
-          <mesh position={[0, -0.43, 0.8]} scale={[0.95, 0.08, 1]}>
-            <planeGeometry args={[1, 1, 1, 1]} />
+        <group ref={portalRef} position={[0, 0, 0.1]}>
+          {/* Outer ring */}
+          <mesh position={[0, 0, -0.01]} raycast={() => null}>
+            <ringGeometry args={[0.9, 1.0, 64]} />
             <meshBasicMaterial
-              color="#121124"
-              opacity={1}
-              raycast={() => null}
+              color="#4a9eff"
+              transparent
+              opacity={0.4}
+              side={THREE.DoubleSide}
             />
           </mesh>
-          <group
-            position={[0, -0.43, 0.7]}
-            scale={[1, 1, 1]}
-            raycast={() => null}
-          >
-            <Text
-              fontSize={0.04}
-              anchorX="left"
-              position={[-0.45, 0, 0.2]}
-              material-toneMapped={false}
-              raycast={() => null} // Make text non-interactive if needed
-            >
-              {props.name?.split("-").join(" ") || name.split("-").join(" ")}
-            </Text>
-            <Text
-              fontSize={0.04}
-              anchorX="right"
-              position={[0.4, 0, 0.2]}
-              material-toneMapped={false}
-              raycast={() => null} // Make text non-interactive if needed
-            >
-              DETAILS
-            </Text>
-            <Text
-              fontSize={0.04}
-              anchorX="right"
-              position={[0.45, 0.01, 0.2]}
-              material-toneMapped={false}
-              raycast={() => null} // Make text non-interactive if needed
-              fontStyle="uppercase"
-              rotation={[0, 0, Math.PI / 4]} // Rotate 45 degrees around Z-axis
-            >
-              ➜
-            </Text>
-          </group>
-        </group> */}
+
+          {/* Middle ring */}
+          <mesh position={[0, 0, -0.02]} raycast={() => null}>
+            <ringGeometry args={[0.8, 0.9, 64]} />
+            <meshBasicMaterial
+              color="#00ffaa"
+              transparent
+              opacity={0.4}
+              side={THREE.DoubleSide}
+            />
+          </mesh>
+
+          {/* Inner ring */}
+          <mesh position={[0, 0, -0.03]} raycast={() => null}>
+            <ringGeometry args={[0.7, 0.8, 64]} />
+            <meshBasicMaterial
+              color="#ff4a9e"
+              transparent
+              opacity={0.4}
+              side={THREE.DoubleSide}
+            />
+          </mesh>
+
+          {/* Energy particles */}
+          <points ref={particlesRef} raycast={() => null}>
+            <bufferGeometry>
+              <bufferAttribute
+                attach="attributes-position"
+                count={50}
+                array={particlePositions.current}
+                itemSize={3}
+              />
+            </bufferGeometry>
+            <pointsMaterial
+              color="#ffffff"
+              size={0.02}
+              transparent
+              opacity={0.8}
+              sizeAttenuation
+              blending={THREE.AdditiveBlending}
+              depthWrite={false}
+            />
+          </points>
+        </group>
       </mesh>
       <Text
         maxWidth={0.1}
