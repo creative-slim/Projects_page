@@ -160,7 +160,7 @@ const App = ({ images }) => {
             />
           </mesh>
 
-          <mesh
+          {/* <mesh
             name="reflector"
             rotation={[-Math.PI / 2, 0, 0]}
             position={[0, 0.01, -18]}
@@ -178,7 +178,7 @@ const App = ({ images }) => {
               color="#050505"
               metalness={0.5}
             />
-          </mesh>
+          </mesh> */}
         </group>
         <ContactShadows
           frames={1}
@@ -192,7 +192,7 @@ const App = ({ images }) => {
         />
 
         {/* <Environment preset="city" /> */}
-        <OrbitControls />
+        {/* <OrbitControls /> */}
         {/* <EffectComposer> */}
         {/* <Bloom mipmapBlur luminanceThreshold={1} intensity={1} /> */}
         {/* No ToneMapping needed here since it's in Canvas */}

@@ -13,25 +13,23 @@ import {
   stopAllAnimations,
   resetAnimationState,
 } from "./utils/animationUtils";
-import { forwardRef } from "react";
-import { useImperativeHandle, useRef, useMemo, useEffect } from "react";
+import { forwardRef, useRef, useMemo } from "react";
+import { useImperativeHandle } from "react";
 // import { NodeToyMaterial, NodeToyTick } from "@nodetoy/react-nodetoy";
-import { NodeToyMaterial } from "@nodetoy/three-nodetoy";
 import { kreatonGoldMaterial } from "./materials/kreatonGoldMaterial";
 import { kreatonArmorMaterial } from "./materials/kreatonWhiteArmorMaterial";
+import { useModelLoader, preloadModel } from './utils/ModelLoader';
 
-// Determine the model URL based on the environment
-const isDevelopment = import.meta.env.DEV;
+// Define model URLs
 const localModelUrl = "/models/KreatonUV3-transformed.glb";
-const remoteModelUrl =
-  "https://files.creative-directors.com/creative-website/creative25/glbs/Kreaton_final-transformed.glb"; // Corrected remote URL if needed
-const modelUrl = isDevelopment ? localModelUrl : remoteModelUrl;
+const remoteModelUrl = "https://files.creative-directors.com/creative-website/creative25/glbs/Kreaton_final-transformed.glb";
 
-console.log(`Loading model from: ${modelUrl}`); // Log which URL is being used
+console.log(`Loading model from: ${localModelUrl}`); // Log which URL is being used
+console.log(`Loading model from: ${remoteModelUrl}`); // Log which URL is being used
 
 export const Kreaton = forwardRef((props, ref) => {
   const internalRef = useRef();
-  const { scene, animations } = useGLTF(modelUrl);
+  const { scene, animations } = useModelLoader(localModelUrl, remoteModelUrl);
   const clone = useMemo(() => SkeletonUtils.clone(scene), [scene]);
   const { nodes, materials } = useGraph(clone);
 
@@ -293,4 +291,5 @@ export const Kreaton = forwardRef((props, ref) => {
   );
 });
 
-useGLTF.preload(modelUrl);
+// Preload the model
+preloadModel(localModelUrl, remoteModelUrl);

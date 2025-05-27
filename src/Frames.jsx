@@ -27,8 +27,12 @@ import getUuid from "uuid-by-string";
 import { AccumulativeShadows, RandomizedLight } from "@react-three/drei";
 import { gsap } from "gsap"; // Import gsap
 import Portal from './Portal';
+import { TextureLoader } from 'three';
+import { useLoader } from '@react-three/fiber';
 
-const GOLDENRATIO = 1.61803398875;
+// const GOLDENRATIO = 1.61803398875;
+const GOLDENRATIO = 1;
+
 
 // Helper function to calculate lookAt quaternion more robustly
 const calculateLookAtQuaternion = (
@@ -47,6 +51,32 @@ const clearActiveProjectClasses = () => {
     el.classList.remove("active");
   });
 };
+
+function getUniquePortalConfigs(seed = 0) {
+  return [
+    {
+      radius: 0.48 + 0.01 * Math.sin(seed),
+      tube: 0.045 + 0.005 * Math.cos(seed),
+      opacity: 0.7,
+      speed: 0.4 + 0.2 * Math.abs(Math.sin(seed * 2)),
+      phase: seed,
+    },
+    {
+      radius: 0.56 + 0.01 * Math.cos(seed),
+      tube: 0.025 + 0.005 * Math.sin(seed),
+      opacity: 0.4,
+      speed: 0.6 + 0.2 * Math.abs(Math.cos(seed * 2)),
+      phase: seed + 1,
+    },
+    {
+      radius: 0.62 + 0.01 * Math.sin(seed * 1.5),
+      tube: 0.012 + 0.005 * Math.cos(seed * 1.5),
+      opacity: 0.2,
+      speed: 0.3 + 0.2 * Math.abs(Math.sin(seed * 3)),
+      phase: seed + 2,
+    }
+  ];
+}
 
 export default function Frames({
   images,
@@ -218,7 +248,6 @@ export default function Frames({
 
 function Frame({ url, c = new THREE.Color(), ...props }) {
   const image = useRef();
-  const frame = useRef();
   const linkRef = useRef();
   const portalRef = useRef();
   const particlesRef = useRef();
@@ -237,70 +266,24 @@ function Frame({ url, c = new THREE.Color(), ...props }) {
     new Float32Array(50 * 3).map(() => (Math.random() - 0.5) * 0.001)
   );
 
-  // Custom shader for gradient rings
-  const gradientShader = {
-    uniforms: {
-      time: { value: 0 },
-      colors: {
-        value: [
-          new THREE.Color("#4a9eff"),
-          new THREE.Color("#00ffaa"),
-          new THREE.Color("#ff4a9e")
-        ]
-      }
-    },
-    vertexShader: `
-      varying vec2 vUv;
-      void main() {
-        vUv = uv;
-        gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
-      }
-    `,
-    fragmentShader: `
-      uniform float time;
-      uniform vec3 colors[3];
-      varying vec2 vUv;
-      
-      void main() {
-        vec2 center = vec2(0.5, 0.5);
-        vec2 pos = vUv - center;
-        float angle = atan(pos.y, pos.x) + time;
-        float normalizedAngle = (angle + 3.14159) / (2.0 * 3.14159);
-        
-        // Create gradient based on angle
-        vec3 color = mix(
-          mix(colors[0], colors[1], smoothstep(0.0, 0.5, normalizedAngle)),
-          mix(colors[1], colors[2], smoothstep(0.5, 1.0, normalizedAngle)),
-          smoothstep(0.0, 1.0, normalizedAngle)
-        );
-        
-        gl_FragColor = vec4(color, 0.4);
-      }
-    `
-  };
+  const imageTexture = useLoader(TextureLoader, url);
+  const mask = useLoader(TextureLoader, '/circle-mask.png');
+
+  const seed = rnd * 1000; // unique per frame
+  const portalConfigs = getUniquePortalConfigs(seed);
 
   useFrame((state, dt) => {
     image.current.material.zoom =
       2 + Math.sin(rnd * 10000 + state.clock.elapsedTime / 3) / 2;
+
+    // Scale up on hover or if frame is active
+    const targetScale = (hovered || isActive) ? 1.3 : 1;
     easing.damp3(
       image.current.scale,
-      [
-        0.85 * (!isActive && hovered ? 0.85 : 1),
-        0.9 * (!isActive && hovered ? 0.905 : 1),
-        1,
-      ],
+      [targetScale, targetScale, 1],
       0.1,
       dt
     );
-    // Safely update frame color if frame.current exists
-    if (frame.current && frame.current.material) {
-      easing.dampC(
-        frame.current.material.color,
-        hovered ? "orange" : "white",
-        0.1,
-        dt
-      );
-    }
 
     // Update shader time uniform
     if (portalRef.current) {
@@ -393,28 +376,33 @@ function Frame({ url, c = new THREE.Color(), ...props }) {
         position={[0, GOLDENRATIO / 2, 0]}
         onClick={handleLinkClick}
       >
-        <boxGeometry />
+        <circleGeometry args={[0.38, 64]} />
         <meshStandardMaterial
           transparent
           opacity={0}
         />
         {/* Subtle inner rim in front of the image for portal depth */}
-        <mesh position={[0, 0, 0.81]} scale={[0.72, 0.72 * GOLDENRATIO, 1]} raycast={() => null}>
+        {/* <mesh position={[0, 0, 0.81]} scale={[0.72, 0.72 * GOLDENRATIO, 1]} raycast={() => null}>
           <ringGeometry args={[0.34, 0.37, 64]} />
           <meshBasicMaterial color="#fff" opacity={0.18} transparent blending={THREE.AdditiveBlending} />
-        </mesh>
+        </mesh> */}
         {/* Subtle glow behind the image */}
         <mesh position={[0, 0, 0.65]} scale={[0.7, 0.7 * GOLDENRATIO, 1]} raycast={() => null}>
           <ringGeometry args={[0.28, 0.36, 64]} />
           <meshBasicMaterial color="#fff8b0" opacity={0.10} transparent blending={THREE.AdditiveBlending} />
         </mesh>
-        <Image
-          raycast={() => null}
-          ref={image}
-          position={[0, 0, 0.75]} // Move image slightly back so it's inside the portal
-          url={url}
-        />
-        <Portal position={[0, 0, 0.35]} scale={[1, GOLDENRATIO, 1]} />
+        {/* Circular image with alpha mask and ref */}
+        <mesh ref={image} position={[0, 0, 0.75]} raycast={() => null}>
+          <circleGeometry args={[0.35, 64]} />
+          <meshBasicMaterial
+            map={imageTexture}
+            alphaMap={mask}
+            transparent
+            side={THREE.DoubleSide}
+          />
+        </mesh>
+
+        <Portal position={[0, 0, 0.35]} scale={[1, GOLDENRATIO, 1]} configs={portalConfigs} />
         {/* Energy particles */}
         <points ref={particlesRef} raycast={() => null}>
           <bufferGeometry>

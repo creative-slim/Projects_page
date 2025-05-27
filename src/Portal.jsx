@@ -3,9 +3,11 @@ import { useFrame } from '@react-three/fiber';
 import * as THREE from 'three';
 
 // Custom shader for animated rainbow gradient
-const getGradientShader = (opacity = 0.7) => ({
+const getGradientShader = (opacity = 0.7, speed = 0.5, phase = 0) => ({
     uniforms: {
-        time: { value: 0 }
+        time: { value: 0 },
+        speed: { value: speed },
+        phase: { value: phase }
     },
     vertexShader: `
     varying vec3 vPos;
@@ -16,6 +18,8 @@ const getGradientShader = (opacity = 0.7) => ({
   `,
     fragmentShader: `
     uniform float time;
+    uniform float speed;
+    uniform float phase;
     varying vec3 vPos;
     // HSV to RGB conversion
     vec3 hsv2rgb(vec3 c) {
@@ -24,7 +28,7 @@ const getGradientShader = (opacity = 0.7) => ({
       return c.z * mix(K.xxx, clamp(p - K.xxx, 0.0, 1.0), c.y);
     }
     void main() {
-      float angle = atan(vPos.y, vPos.x) + time;
+      float angle = atan(vPos.y, vPos.x) + time * speed + phase;
       float t = mod(angle / (2.0 * 3.14159), 1.0);
       vec3 color = hsv2rgb(vec3(t, 1.0, 1.0));
       gl_FragColor = vec4(color, ${opacity.toFixed(2)});
@@ -41,9 +45,9 @@ const getGradientShader = (opacity = 0.7) => ({
  */
 export default function Portal({
     configs = [
-        { radius: 0.48, tube: 0.045, opacity: 0.7 },
-        { radius: 0.56, tube: 0.025, opacity: 0.4 },
-        { radius: 0.62, tube: 0.012, opacity: 0.2 }
+        { radius: 0.48, tube: 0.045, opacity: 0.7, speed: 0.5, phase: 0 },
+        { radius: 0.56, tube: 0.025, opacity: 0.4, speed: 0.7, phase: 1.0 },
+        { radius: 0.62, tube: 0.012, opacity: 0.2, speed: 0.3, phase: 2.0 }
     ],
     position = [0, 0, 0],
     scale = [1, 1, 1]
@@ -51,9 +55,9 @@ export default function Portal({
     const meshRefs = useRef([]);
 
     useFrame((state) => {
-        meshRefs.current.forEach((ref) => {
+        meshRefs.current.forEach((ref, i) => {
             if (ref && ref.material.uniforms) {
-                ref.material.uniforms.time.value = state.clock.elapsedTime * 0.5;
+                ref.material.uniforms.time.value = state.clock.elapsedTime;
             }
         });
     });
@@ -69,7 +73,7 @@ export default function Portal({
                     <torusGeometry args={[cfg.radius, cfg.tube, 64, 128]} />
                     <shaderMaterial
                         attach="material"
-                        args={[getGradientShader(cfg.opacity)]}
+                        args={[getGradientShader(cfg.opacity, cfg.speed, cfg.phase)]}
                         transparent
                         side={THREE.DoubleSide}
                         depthWrite={false}

@@ -34,6 +34,7 @@ import Frames from "./Frames";
 import { gsap } from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { Heading } from "./Site-headings";
+import { ProjekteText } from "./Font-Projekte";
 
 import getApiData from "./images";
 
@@ -67,6 +68,93 @@ const img = isDevelopment ? localimages : remoteImages;
 
 console.log(`Loading model from: ${img}`); // Log which URL is being used
 
+
+const App = ({ }) => {
+  const innerSceneRef = useRef();
+  const projectTextRef = useRef();
+  const headingRef = useRef(); // Create ref for Heading
+  const [isZoomed, setIsZoomed] = useState(false); // State to track zoom
+
+  // use getApiData to fetch images
+  const [images, setImages] = useState([]);
+  useEffect(() => {
+    const fetchImages = async () => {
+      const data = await getApiData();
+      setImages(data);
+    };
+    fetchImages();
+  }, []);
+  console.log("Images:", images);
+
+  return (
+    <>
+      <Canvas
+        shadows
+        dpr={[1, 1.5]}
+        gl={{ antialias: true }}
+        camera={{ fov: INITIAL_FOV, position: section1Position.toArray() }} // Use INITIAL_FOV directly
+        flat
+      >
+        <color attach="background" args={["#000000"]} />
+        <fog attach="fog" args={["#000000", 0, 50]} />
+
+        {/* <OrbitControls /> */}
+        {/* Render SceneSetup inside Canvas, pass headingRef */}
+        <SceneSetup
+          projectTextRef={projectTextRef}
+          isZoomed={isZoomed}
+          headingRef={headingRef}
+        />
+
+        {/* <Resize width={1000} height={1000}> */}
+        {/* <ProjectPlane
+          ref={projectTextRef}
+          rotation={[0.1, Math.PI / -2, 0]}
+          position={[0, 8, -10]}
+          scale={1}
+          castShadow
+          receiveShadow
+        /> */}
+
+        {/* <Heading
+          ref={headingRef} // Assign ref to Heading
+          position={[0.2, 7.8, -5]}
+          scale={2.5}
+          rotation={[Math.PI / 2, 0, 0]}
+          castShadow
+        /> */}
+
+        <ProjekteText
+          ref={headingRef}
+          position={[-4.7, 7.8, -3]}
+          scale={1}
+          rotation={[Math.PI / 2, 0, 0]}
+          castShadow
+        />
+
+
+        <InnerScene
+          images={images}
+          ref={innerSceneRef}
+          setIsZoomed={setIsZoomed}
+          // Pass down section 2 camera targets
+          section2Position={section2Position}
+          section2LookAtTarget={section2LookAtTarget}
+          // Pass down FOV related props
+          initialFov={INITIAL_FOV}
+        />
+        {/* <Environment preset="city" /> */}
+        {/* <OrbitControls /> */}
+        <EffectComposer>
+          <Vignette eskil={false} offset={0.1} darkness={1.1} />
+          <Bloom mipmapBlur luminanceThreshold={1} intensity={1} />
+        </EffectComposer>
+        {/* </Resize> */}
+      </Canvas>
+    </>
+  );
+};
+
 // Helper component to apply lookAt smoothly using the proxy target
 // Only applies lookAt when not zoomed into a frame
 function CameraUpdater({ lookAtTarget, isZoomed }) {
@@ -79,7 +167,6 @@ function CameraUpdater({ lookAtTarget, isZoomed }) {
   });
   return null;
 }
-
 // New component to handle GSAP setup and useThree hook
 function SceneSetup({ projectTextRef, isZoomed, headingRef }) {
   // Add headingRef prop
@@ -193,80 +280,6 @@ function SceneSetup({ projectTextRef, isZoomed, headingRef }) {
   return <CameraUpdater lookAtTarget={proxyLookAtTarget} isZoomed={isZoomed} />;
 }
 
-const App = ({ }) => {
-  const innerSceneRef = useRef();
-  const projectTextRef = useRef();
-  const headingRef = useRef(); // Create ref for Heading
-  const [isZoomed, setIsZoomed] = useState(false); // State to track zoom
-
-  // use getApiData to fetch images
-  const [images, setImages] = useState([]);
-  useEffect(() => {
-    const fetchImages = async () => {
-      const data = await getApiData();
-      setImages(data);
-    };
-    fetchImages();
-  }, []);
-  console.log("Images:", images);
-
-  return (
-    <>
-      <Canvas
-        shadows
-        dpr={[1, 1.5]}
-        gl={{ antialias: true }}
-        camera={{ fov: INITIAL_FOV, position: section1Position.toArray() }} // Use INITIAL_FOV directly
-        flat
-      >
-        <color attach="background" args={["#000000"]} />
-        <fog attach="fog" args={["#000000", 0, 50]} />
-
-        {/* Render SceneSetup inside Canvas, pass headingRef */}
-        <SceneSetup
-          projectTextRef={projectTextRef}
-          isZoomed={isZoomed}
-          headingRef={headingRef}
-        />
-
-        {/* <Resize width={1000} height={1000}> */}
-        {/* <ProjectPlane
-          ref={projectTextRef}
-          rotation={[0.1, Math.PI / -2, 0]}
-          position={[0, 8, -10]}
-          scale={1}
-          castShadow
-          receiveShadow
-        /> */}
-
-        <Heading
-          ref={headingRef} // Assign ref to Heading
-          position={[0.2, 7.8, -5]}
-          scale={2.5}
-          rotation={[Math.PI / 2, 0, 0]}
-          castShadow
-        />
-        <InnerScene
-          images={images}
-          ref={innerSceneRef}
-          setIsZoomed={setIsZoomed}
-          // Pass down section 2 camera targets
-          section2Position={section2Position}
-          section2LookAtTarget={section2LookAtTarget}
-          // Pass down FOV related props
-          initialFov={INITIAL_FOV}
-        />
-        {/* <Environment preset="city" /> */}
-        {/* <OrbitControls /> */}
-        <EffectComposer>
-          <Vignette eskil={false} offset={0.1} darkness={1.1} />
-          <Bloom mipmapBlur luminanceThreshold={1} intensity={1} />
-        </EffectComposer>
-        {/* </Resize> */}
-      </Canvas>
-    </>
-  );
-};
 
 // Component to handle the moon with color animation
 const AnimatedMoon = ({ position, rotation, scale }) => {
@@ -351,9 +364,7 @@ const InnerScene = ({
       />
 
       {/* <TextModel position={[1.2, -0.6, 4]} rotation={[0, -Math.PI / 2, 0]} /> */}
-
       {/* <ProjectPlane position={[1.2, 0, 4]} rotation={[0, -Math.PI / 2, 0]} /> */}
-
       {/* <Kreaton position={[0, -0.6, 4]} scale={0.5} rotation={[0, Math.PI, 0]} /> */}
       {/* <Armchair
         position={[0, -0.6, 4]}
@@ -383,7 +394,7 @@ const InnerScene = ({
           scale={0.7}
         />
       </group>
-      <ContactShadows
+      {/* <ContactShadows
         frames={1}
         opacity={1}
         scale={10}
@@ -392,7 +403,7 @@ const InnerScene = ({
         position={[0, -0.6, 0]}
         resolution={256}
         color="#000000"
-      />
+      /> */}
     </group>
   );
 };

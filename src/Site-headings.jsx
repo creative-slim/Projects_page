@@ -4,21 +4,19 @@ Command: npx gltfjsx@6.5.3 ./public/models/site-headings.glb
 */
 
 import React from "react";
-import { useGLTF, useHelper } from "@react-three/drei";
+import { useHelper } from "@react-three/drei";
 import { Color, MeshBasicMaterial, ShaderMaterial } from "three";
 import { useEffect } from "react";
 import { useFrame } from "@react-three/fiber";
 import * as THREE from "three";
+import { useModelLoader, preloadModel } from './utils/ModelLoader';
 
-// Determine the model URL based on the environment
-const isDevelopment = import.meta.env.DEV;
+// Define model URLs
 const localModelUrl = "/models/site-headings.glb";
-const remoteModelUrl =
-  "https://files.creative-directors.com/creative-website/creative25/glbs/site-headings.glb"; // Corrected remote URL if needed
-const modelUrl = isDevelopment ? localModelUrl : remoteModelUrl;
+const remoteModelUrl = "https://files.creative-directors.com/creative-website/creative25/glbs/site-headings.glb";
 
 export function Heading(props) {
-  const { nodes, materials } = useGLTF(modelUrl);
+  const { nodes, materials } = useModelLoader(localModelUrl, remoteModelUrl);
   // materials.blau = new MeshBasicMaterial({
   //   color: new Color(0.5, 0.4, 11), // Exaggerated #F4E7D7
   //   // color: new Color("#F4E7D7"), // Exaggerated #F4E7D7
@@ -174,4 +172,5 @@ export function Heading(props) {
   );
 }
 
-useGLTF.preload(modelUrl);
+// Preload the model
+preloadModel(localModelUrl, remoteModelUrl);

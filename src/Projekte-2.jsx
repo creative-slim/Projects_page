@@ -19,6 +19,11 @@ import {
 import { useThree, useFrame } from "@react-three/fiber";
 import { useRef } from "react";
 import * as THREE from "three";
+import { useModelLoader, preloadModel } from './utils/ModelLoader';
+
+// Define model URLs
+const localModelUrl = "/models/projekte-2-transformed.glb";
+const remoteModelUrl = "https://files.creative-directors.com/creative-website/creative25/glbs/projekte-2-transformed.glb";
 
 export function ProjectPlane(props) {
   const textObj = useRef();
@@ -29,7 +34,7 @@ export function ProjectPlane(props) {
     toneMapped: false,
   });
 
-  const { nodes, materials } = useGLTF("/models/projekte-2-transformed.glb");
+  const { nodes, materials } = useModelLoader(localModelUrl, remoteModelUrl);
 
   return (
     <group {...props} dispose={null}>
@@ -48,4 +53,5 @@ export function ProjectPlane(props) {
   );
 }
 
-useGLTF.preload("/models/projekte-2-transformed.glb");
+// Preload the model
+preloadModel(localModelUrl, remoteModelUrl);
