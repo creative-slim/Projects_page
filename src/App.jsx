@@ -22,18 +22,18 @@ import {
   ToneMapping,
   Vignette,
 } from "@react-three/postprocessing";
-import { useRoute, useLocation } from "wouter";
-import getUuid from "uuid-by-string";
+// import { useRoute, useLocation } from "wouter";
+// import getUuid from "uuid-by-string";
 
-import { AccumulativeShadows, RandomizedLight } from "@react-three/drei";
-import { Kreaton } from "./Kreaton_A";
-import { Armchair } from "./Armchair";
-import { ProjectPlane } from "./Projekte-2";
+// import { AccumulativeShadows, RandomizedLight } from "@react-three/drei";
+// import { Kreaton } from "./Kreaton_A";
+// import { Armchair } from "./Armchair";
+// import { ProjectPlane } from "./Projekte-2";
 import Frames from "./Frames";
 
 import { gsap } from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
-import { Heading } from "./Site-headings";
+// import { Heading } from "./Site-headings";
 import { ProjekteText } from "./Font-Projekte";
 
 import getApiData from "./images";
