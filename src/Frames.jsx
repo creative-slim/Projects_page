@@ -267,7 +267,7 @@ function Frame({ url, c = new THREE.Color(), ...props }) {
   );
 
   const imageTexture = useLoader(TextureLoader, url);
-  const mask = useLoader(TextureLoader, 'https://files.creative-directors.com/creative-website/creative25/circle-mask.png');
+  const mask = useLoader(TextureLoader, 'https://files.creative-directors.com/creative-website/creative25/project-masks/circle-mask.png');
 
   const seed = rnd * 1000; // unique per frame
   const portalConfigs = getUniquePortalConfigs(seed);
