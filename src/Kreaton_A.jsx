@@ -15,6 +15,7 @@ import {
 } from "./utils/animationUtils";
 import { forwardRef, useRef, useMemo } from "react";
 import { useImperativeHandle } from "react";
+import { devLog, devWarn, devError } from './utils/devLog';
 // import { NodeToyMaterial, NodeToyTick } from "@nodetoy/react-nodetoy";
 import { kreatonGoldMaterial } from "./materials/kreatonGoldMaterial";
 import { kreatonArmorMaterial } from "./materials/kreatonWhiteArmorMaterial";
@@ -24,8 +25,8 @@ import { useModelLoader, preloadModel } from './utils/ModelLoader';
 const localModelUrl = "/models/KreatonUV3-transformed.glb";
 const remoteModelUrl = "https://files.creative-directors.com/creative-website/creative25/glbs/Kreaton_final-transformed.glb";
 
-console.log(`Loading model from: ${localModelUrl}`); // Log which URL is being used
-console.log(`Loading model from: ${remoteModelUrl}`); // Log which URL is being used
+devLog(`Loading model from: ${localModelUrl}`); // Log which URL is being used
+devLog(`Loading model from: ${remoteModelUrl}`); // Log which URL is being used
 
 export const Kreaton = forwardRef((props, ref) => {
   const internalRef = useRef();
@@ -65,7 +66,7 @@ export const Kreaton = forwardRef((props, ref) => {
             .play();
           return true;
         }
-        console.warn(`Animation "${name}" not found`);
+        devWarn(`Animation "${name}" not found`);
         return false;
       },
 

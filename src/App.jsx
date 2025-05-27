@@ -37,15 +37,17 @@ import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { ProjekteText } from "./Font-Projekte";
 
 import getApiData from "./images";
+import { devLog, devWarn, devError } from './utils/devLog';
 
 gsap.registerPlugin(ScrollTrigger);
 
 const GOLDENRATIO = 1.61803398875;
-const INITIAL_FOV = 50; // Define initial FOV
+const INITIAL_FOV = 60; // Define initial FOV
 
 // --- Camera Configuration ---
 const section1Position = new THREE.Vector3(0, 8, 5);
-const section2Position = new THREE.Vector3(0, 0.8, 7.5);
+// const section2Position = new THREE.Vector3(0, 0.8, 7.5);
+const section2Position = new THREE.Vector3(0, -0.1, 6);
 const section2LookAtTarget = new THREE.Vector3(0, 0, -5);
 // --- End Camera Configuration ---
 
@@ -66,7 +68,7 @@ const remoteImages = {
 };
 const img = isDevelopment ? localimages : remoteImages;
 
-console.log(`Loading model from: ${img}`); // Log which URL is being used
+devLog(`Loading model from: ${img}`); // Log which URL is being used
 
 
 const App = ({ }) => {
@@ -84,7 +86,7 @@ const App = ({ }) => {
     };
     fetchImages();
   }, []);
-  console.log("Images:", images);
+  devLog("Images:", images);
 
   return (
     <>
@@ -266,10 +268,10 @@ function SceneSetup({ projectTextRef, isZoomed, headingRef }) {
     const st = scrollTriggerRef.current; // Get the ScrollTrigger instance
     if (st) {
       if (isZoomed) {
-        console.log("Disabling ScrollTrigger");
+        devLog("Disabling ScrollTrigger");
         st.disable(false); // Disable but don't revert position immediately
       } else {
-        console.log("Enabling ScrollTrigger and updating");
+        devLog("Enabling ScrollTrigger and updating");
         st.enable(); // Re-enable
         st.update(); // Force immediate update based on scroll position
       }

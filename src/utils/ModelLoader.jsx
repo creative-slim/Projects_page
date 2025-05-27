@@ -1,4 +1,5 @@
 import { useGLTF } from '@react-three/drei'
+import { devLog, devWarn, devError } from './devLog'
 
 export function useModelLoader(localModelUrl, remoteModelUrl) {
     const isDevelopment = import.meta.env.DEV;
@@ -6,7 +7,7 @@ export function useModelLoader(localModelUrl, remoteModelUrl) {
     const result = useGLTF(modelUrl);
 
     // Log which URL is being used
-    console.log(`Loading model from: ${modelUrl}`);
+    devLog(`Loading model from: ${modelUrl}`);
 
     return result;
 }

@@ -1,8 +1,10 @@
+import { devLog, devWarn, devError } from './utils/devLog';
+
 const getApiData = async () => {
   const url =
     "https://webhook.creative-directors.com/webhook/7bd04d17-2d35-49e1-a2aa-10b5c8ee3429";
   const endpointResponse = await fetchImageData(url);
-  console.log("Endpoint Response:", endpointResponse);
+  devLog("Endpoint Response:", endpointResponse);
 
   const oldImages = [
     // Front
@@ -71,7 +73,7 @@ const fetchImageData = async (webhookUrl) => {
     const data = await response.json();
     return data;
   } catch (error) {
-    console.error("Error fetching image data:", error);
+    devError("Error fetching image data:", error);
     // Return empty array as fallback
     return [];
   }
