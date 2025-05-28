@@ -10,13 +10,14 @@ import { useHelper } from '@react-three/drei'
 import * as THREE from 'three'
 import { Color } from 'three'
 import { useModelLoader, preloadModel } from './utils/ModelLoader'
+import { Html } from '@react-three/drei'
 
 // Define model URLs
 const localModelUrl = "/models/Font-Projekte-transformed.glb";
 const remoteModelUrl = "https://files.creative-directors.com/creative-website/creative25/glbs/Font-Projekte-transformed.glb";
 
 export function ProjekteText(props) {
-  const { nodes, materials } = useModelLoader(localModelUrl, remoteModelUrl);
+  const { nodes, materials, loading } = useModelLoader(localModelUrl, remoteModelUrl);
 
   const pointLightRef = React.useRef();
   const directionalLightRef = React.useRef();
@@ -43,6 +44,8 @@ export function ProjekteText(props) {
       directionalLightRef.current.target = targetRef.current;
     }
   });
+
+  if (loading) return <group {...props}><Html center>Loading...</Html></group>;
 
   return (
     <group {...props} dispose={null}>

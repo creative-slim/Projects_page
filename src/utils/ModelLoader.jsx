@@ -1,15 +1,22 @@
 import { useGLTF } from '@react-three/drei'
+import { useState, useEffect } from 'react';
 import { devLog, devWarn, devError } from './devLog'
 
 export function useModelLoader(localModelUrl, remoteModelUrl) {
     const isDevelopment = import.meta.env.DEV;
     const modelUrl = isDevelopment ? localModelUrl : remoteModelUrl;
+    const [loading, setLoading] = useState(true);
     const result = useGLTF(modelUrl);
 
-    // Log which URL is being used
-    devLog(`Loading model from: ${modelUrl}`);
+    useEffect(() => {
+        if (result && result.scene) {
+            setLoading(false);
+        }
+    }, [result]);
 
-    return result;
+    devLog(`Loading model from: ${modelUrl} (loading: ${loading})`);
+
+    return { ...result, loading };
 }
 
 // Preload function to be used in the main component
