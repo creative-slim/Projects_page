@@ -35,9 +35,11 @@ import { gsap } from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 // import { Heading } from "./Site-headings";
 import { ProjekteText } from "./Font-Projekte";
-
+import AnimatedStars from "./AnimatedStars";
 import getApiData from "./images";
 import { devLog, devWarn, devError } from './utils/devLog';
+import ErrorBoundary from './components/ErrorBoundary';
+import ThreeErrorBoundary from './components/ThreeErrorBoundary';
 
 gsap.registerPlugin(ScrollTrigger);
 
@@ -54,17 +56,17 @@ const section2LookAtTarget = new THREE.Vector3(0, 0, -5);
 // Determine the model URL based on the environment
 const isDevelopment = import.meta.env.DEV;
 const localimages = {
-  color: "/terrain_color_4x_blobby.jpg",
-  normal: "/terrain_normal_4x_blobby.jpg",
-  height: "/terrain_height_4x_blobby.jpg",
+  color: "/terrain_color_4x_blobby.webp",
+  normal: "/terrain_normal_4x_blobby.webp",
+  height: "/terrain_height_4x_blobby.webp",
 };
 const remoteImages = {
   color:
-    "https://files.creative-directors.com/creative-website/creative25/scenes_imgs/terrain_color_4x_blobby.jpg",
+    "https://files.creative-directors.com/creative-website/creative25/scenes_imgs/terrain_color_4x_blobby.webp",
   normal:
-    "https://files.creative-directors.com/creative-website/creative25/scenes_imgs/terrain_normal_4x_blobby.jpg",
+    "https://files.creative-directors.com/creative-website/creative25/scenes_imgs/terrain_normal_4x_blobby.webp",
   height:
-    "https://files.creative-directors.com/creative-website/creative25/scenes_imgs/terrain_height_4x_blobby.jpg",
+    "https://files.creative-directors.com/creative-website/creative25/scenes_imgs/terrain_height_4x_blobby.webp",
 };
 const img = isDevelopment ? localimages : remoteImages;
 
@@ -76,84 +78,110 @@ const App = ({ }) => {
   const projectTextRef = useRef();
   const headingRef = useRef(); // Create ref for Heading
   const [isZoomed, setIsZoomed] = useState(false); // State to track zoom
-
-  // use getApiData to fetch images
   const [images, setImages] = useState([]);
+  const [sceneError, setSceneError] = useState(null);
+
   useEffect(() => {
     const fetchImages = async () => {
-      const data = await getApiData();
-      setImages(data);
+      try {
+        const data = await getApiData();
+        setImages(data);
+      } catch (error) {
+        devError('Failed to fetch images:', error);
+        setSceneError(error);
+      }
     };
     fetchImages();
   }, []);
-  devLog("Images:", images);
+
+  const handleSceneError = (error) => {
+    devError('Scene error:', error);
+    setSceneError(error);
+  };
+
+  const handleSceneRetry = () => {
+    setSceneError(null);
+    window.location.reload();
+  };
+
+  const handleSceneFallback = () => {
+    // Implement fallback scene or static content
+    setSceneError(null);
+    // You could set a state to show a simpler version of the scene
+  };
 
   return (
-    <>
-      <Canvas
-        shadows
-        dpr={[1, 1.5]}
-        gl={{ antialias: true }}
-        camera={{ fov: INITIAL_FOV, position: section1Position.toArray() }} // Use INITIAL_FOV directly
-        flat
+    <ErrorBoundary>
+      <ThreeErrorBoundary
+        onError={handleSceneError}
+        onRetry={handleSceneRetry}
+        onFallback={handleSceneFallback}
       >
-        <color attach="background" args={["#000000"]} />
-        <fog attach="fog" args={["#000000", 0, 50]} />
+        <Canvas
+          shadows
+          dpr={[1, 1.5]}
+          gl={{ antialias: true }}
+          camera={{ fov: INITIAL_FOV, position: section1Position.toArray() }} // Use INITIAL_FOV directly
+          flat
+        >
+          <color attach="background" args={["#000000"]} />
+          <fog attach="fog" args={["#000000", 0, 50]} />
 
-        {/* <OrbitControls /> */}
-        {/* Render SceneSetup inside Canvas, pass headingRef */}
-        <SceneSetup
-          projectTextRef={projectTextRef}
-          isZoomed={isZoomed}
-          headingRef={headingRef}
-        />
+          {/* <OrbitControls /> */}
+          {/* Render SceneSetup inside Canvas, pass headingRef */}
+          <SceneSetup
+            projectTextRef={projectTextRef}
+            isZoomed={isZoomed}
+            headingRef={headingRef}
+          />
 
-        {/* <Resize width={1000} height={1000}> */}
-        {/* <ProjectPlane
-          ref={projectTextRef}
-          rotation={[0.1, Math.PI / -2, 0]}
-          position={[0, 8, -10]}
-          scale={1}
-          castShadow
-          receiveShadow
-        /> */}
+          {/* <Resize width={1000} height={1000}> */}
+          {/* <ProjectPlane
+            ref={projectTextRef}
+            rotation={[0.1, Math.PI / -2, 0]}
+            position={[0, 8, -10]}
+            scale={1}
+            castShadow
+            receiveShadow
+          /> */}
 
-        {/* <Heading
-          ref={headingRef} // Assign ref to Heading
-          position={[0.2, 7.8, -5]}
-          scale={2.5}
-          rotation={[Math.PI / 2, 0, 0]}
-          castShadow
-        /> */}
+          {/* <Heading
+            ref={headingRef} // Assign ref to Heading
+            position={[0.2, 7.8, -5]}
+            scale={2.5}
+            rotation={[Math.PI / 2, 0, 0]}
+            castShadow
+          /> */}
 
-        <ProjekteText
-          ref={headingRef}
-          position={[-4.7, 7.8, -3]}
-          scale={1}
-          rotation={[Math.PI / 2, 0, 0]}
-          castShadow
-        />
+          <ProjekteText
+            ref={headingRef}
+            position={[-4.7, 7.8, -3]}
+            scale={1}
+            rotation={[Math.PI / 2, 0, 0]}
+            castShadow
+          />
 
 
-        <InnerScene
-          images={images}
-          ref={innerSceneRef}
-          setIsZoomed={setIsZoomed}
-          // Pass down section 2 camera targets
-          section2Position={section2Position}
-          section2LookAtTarget={section2LookAtTarget}
-          // Pass down FOV related props
-          initialFov={INITIAL_FOV}
-        />
-        {/* <Environment preset="city" /> */}
-        {/* <OrbitControls /> */}
-        <EffectComposer>
-          <Vignette eskil={false} offset={0.1} darkness={1.1} />
-          <Bloom mipmapBlur luminanceThreshold={1} intensity={1} />
-        </EffectComposer>
-        {/* </Resize> */}
-      </Canvas>
-    </>
+          <InnerScene
+            images={images}
+            ref={innerSceneRef}
+            setIsZoomed={setIsZoomed}
+            // Pass down section 2 camera targets
+            section2Position={section2Position}
+            section2LookAtTarget={section2LookAtTarget}
+            // Pass down FOV related props
+            initialFov={INITIAL_FOV}
+          />
+          {/* <Environment preset="city" /> */}
+          {/* <OrbitControls /> */}
+          <EffectComposer>
+            <Vignette eskil={false} offset={0.1} darkness={1.1} />
+            <Bloom mipmapBlur luminanceThreshold={1} intensity={1} />
+          </EffectComposer>
+          {/* </Resize> */}
+        </Canvas>
+      </ThreeErrorBoundary>
+    </ErrorBoundary>
   );
 };
 
@@ -347,7 +375,11 @@ const InnerScene = ({
 }) => {
   return (
     <group name="innerScene">
-      <Stars />
+      <AnimatedStars
+        radius={100}
+        depth={50}
+        count={5000}
+      />
       <ambientLight intensity={1} />
       <pointLight
         position={[2, 5, 4]}

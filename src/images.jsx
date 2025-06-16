@@ -1,8 +1,28 @@
 import { devLog, devWarn, devError } from './utils/devLog';
 
+// Cache for storing image data
+const imageCache = new Map();
+
+// Preload an image
+const preloadImage = (url) => {
+  return new Promise((resolve, reject) => {
+    const img = new Image();
+    img.onload = () => resolve(img);
+    img.onerror = reject;
+    img.src = url;
+  });
+};
+
 const getApiData = async () => {
   const url =
     "https://webhook.creative-directors.com/webhook/7bd04d17-2d35-49e1-a2aa-10b5c8ee3429";
+
+  // Check cache first
+  if (imageCache.has(url)) {
+    devLog("Using cached image data");
+    return imageCache.get(url);
+  }
+
   const endpointResponse = await fetchImageData(url);
   devLog("Endpoint Response:", endpointResponse);
 
@@ -56,6 +76,18 @@ const getApiData = async () => {
     name: image.name,
     slug: image.slug,
   }));
+
+  // Cache the results
+  imageCache.set(url, images);
+
+  // Preload images in the background
+  images.forEach(image => {
+    if (image.url) {
+      preloadImage(image.url).catch(error => {
+        devWarn(`Failed to preload image: ${image.url}`, error);
+      });
+    }
+  });
 
   return images;
 };

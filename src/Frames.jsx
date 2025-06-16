@@ -231,6 +231,29 @@ function Frame({ url, c = new THREE.Color(), selectedFrameId, ...props }) {
   const seed = rnd * 1000; // unique per frame
   const portalConfigs = getUniquePortalConfigs(seed);
 
+  // Add cleanup for particles and textures
+  useEffect(() => {
+    return () => {
+      if (particlesRef.current) {
+        particlesRef.current.geometry.dispose();
+        particlesRef.current.material.dispose();
+      }
+      if (imageTexture) {
+        imageTexture.dispose();
+      }
+      if (mask) {
+        mask.dispose();
+      }
+    };
+  }, []);
+
+  // Optimize particle count based on distance
+  const getParticleCount = (distance) => {
+    if (distance > 5) return 10;  // Far away
+    if (distance > 3) return 25;  // Medium distance
+    return 50;  // Close up
+  };
+
   useFrame((state, dt) => {
     image.current.material.zoom =
       2 + Math.sin(rnd * 10000 + state.clock.elapsedTime / 3) / 2;
@@ -253,51 +276,57 @@ function Frame({ url, c = new THREE.Color(), selectedFrameId, ...props }) {
       });
     }
 
-    // Animate particles with random movement
+    // Optimize particle updates based on distance
     if (particlesRef.current) {
-      const positions = particlesRef.current.geometry.attributes.position.array;
-      const velocities = particleVelocities.current;
+      const distance = state.camera.position.distanceTo(particlesRef.current.position);
+      const particleCount = getParticleCount(distance);
 
-      for (let i = 0; i < positions.length; i += 3) {
-        // Update positions based on velocities
-        positions[i] += velocities[i];
-        positions[i + 1] += velocities[i + 1];
-        positions[i + 2] += velocities[i + 2];
+      // Only update if we're close enough
+      if (distance < 5) {
+        const positions = particlesRef.current.geometry.attributes.position.array;
+        const velocities = particleVelocities.current;
 
-        // Add some random acceleration
-        velocities[i] += (Math.random() - 0.5) * 0.0005;
-        velocities[i + 1] += (Math.random() - 0.5) * 0.0005;
-        velocities[i + 2] += (Math.random() - 0.5) * 0.0005;
+        for (let i = 0; i < positions.length; i += 3) {
+          // Update positions based on velocities
+          positions[i] += velocities[i];
+          positions[i + 1] += velocities[i + 1];
+          positions[i + 2] += velocities[i + 2];
 
-        // Dampen velocities
-        velocities[i] *= 0.995;
-        velocities[i + 1] *= 0.995;
-        velocities[i + 2] *= 0.995;
+          // Add some random acceleration
+          velocities[i] += (Math.random() - 0.5) * 0.0005;
+          velocities[i + 1] += (Math.random() - 0.5) * 0.0005;
+          velocities[i + 2] += (Math.random() - 0.5) * 0.0005;
 
-        // Keep particles within bounds
-        const maxRadius = 1.2;
-        const distance = Math.sqrt(
-          positions[i] * positions[i] +
-          positions[i + 1] * positions[i + 1]
-        );
+          // Dampen velocities
+          velocities[i] *= 0.995;
+          velocities[i + 1] *= 0.995;
+          velocities[i + 2] *= 0.995;
 
-        if (distance > maxRadius) {
-          const angle = Math.atan2(positions[i + 1], positions[i]);
-          positions[i] = Math.cos(angle) * maxRadius;
-          positions[i + 1] = Math.sin(angle) * maxRadius;
+          // Keep particles within bounds
+          const maxRadius = 1.2;
+          const distance = Math.sqrt(
+            positions[i] * positions[i] +
+            positions[i + 1] * positions[i + 1]
+          );
 
-          // Bounce off the boundary
-          velocities[i] *= -0.2;
-          velocities[i + 1] *= -0.2;
+          if (distance > maxRadius) {
+            const angle = Math.atan2(positions[i + 1], positions[i]);
+            positions[i] = Math.cos(angle) * maxRadius;
+            positions[i + 1] = Math.sin(angle) * maxRadius;
+
+            // Bounce off the boundary
+            velocities[i] *= -0.2;
+            velocities[i + 1] *= -0.2;
+          }
+
+          // Keep z position within bounds
+          if (Math.abs(positions[i + 2]) > 0.2) {
+            positions[i + 2] = Math.sign(positions[i + 2]) * 0.2;
+            velocities[i + 2] *= -0.2;
+          }
         }
-
-        // Keep z position within bounds
-        if (Math.abs(positions[i + 2]) > 0.2) {
-          positions[i + 2] = Math.sign(positions[i + 2]) * 0.2;
-          velocities[i + 2] *= -0.2;
-        }
+        particlesRef.current.geometry.attributes.position.needsUpdate = true;
       }
-      particlesRef.current.geometry.attributes.position.needsUpdate = true;
     }
   });
 
@@ -305,22 +334,34 @@ function Frame({ url, c = new THREE.Color(), selectedFrameId, ...props }) {
     devLog("Frame clicked, handling link logic:", props);
     if (props.slug) {
       const targetSelector = `[data-projects="${props.slug}"]`;
+      devLog("Looking for element with selector:", targetSelector);
       const targetElement = document.querySelector(targetSelector);
 
       if (targetElement) {
         devLog("Found target element:", targetElement);
+        devLog("Current classes on target element:", targetElement.className);
 
         const allProjectElements = document.querySelectorAll("[data-projects]");
+        devLog("Found all project elements:", allProjectElements.length);
+
         allProjectElements.forEach((el) => {
+          devLog("Removing 'active' class from:", el.getAttribute('data-projects'));
           el.classList.remove("active");
         });
 
+        devLog("Adding 'active' class to:", props.slug);
         targetElement.classList.add("active");
+        devLog("New classes on target element:", targetElement.className);
       } else {
         devWarn(`Element with data-projects="${props.slug}" not found.`);
+        devLog("Available data-projects elements:",
+          Array.from(document.querySelectorAll("[data-projects]"))
+            .map(el => el.getAttribute('data-projects'))
+        );
       }
     } else {
       devWarn("Slug prop is missing from Frame component.");
+      devLog("Frame props:", props);
     }
   };
 

@@ -5,11 +5,48 @@
     <link rel="icon" type="image/svg+xml" href="/vite.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Vite + React</title>
-    <script type="module" crossorigin src="/assets/index-D114Gfx2.js"></script>
+    <style>
+      .project-container {
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        z-index: 1000;
+        background: rgba(0, 0, 0, 0.8);
+        padding: 20px;
+        border-radius: 10px;
+        color: white;
+      }
+      .project-element {
+        padding: 5px 10px;
+        margin: 5px 0;
+        cursor: pointer;
+        transition: all 0.3s ease;
+      }
+      .project-element.active {
+        background: #f0ff6c;
+        color: black;
+        border-radius: 5px;
+      }
+    </style>
+    <script type="module" crossorigin src="/assets/index-C55yqJk8.js"></script>
     <link rel="stylesheet" crossorigin href="/assets/index-Q93CVET9.css">
   </head>
   <body>
     <div style="position: relative">
+      <div class="project-container">
+        <div data-projects="tankstelle-scheyern" class="project-element">tankstelle-scheyern</div>
+        <div data-projects="shikido" class="project-element">shikido</div>
+        <div data-projects="natural-spirit" class="project-element">natural-spirit</div>
+        <div data-projects="la-fee-dor" class="project-element">la-fee-dor</div>
+        <div data-projects="jasminboxing" class="project-element">jasminboxing</div>
+        <div data-projects="jadestein" class="project-element">jadestein</div>
+        <div data-projects="badesarian-raptor" class="project-element">badesarian-raptor</div>
+        <div data-projects="raumglanz24" class="project-element">raumglanz24</div>
+        <div data-projects="reumgstudio24" class="project-element">reumgstudio24</div>
+        <div data-projects="linea-d" class="project-element">linea-d</div>
+        <div data-projects="prowirtschaft" class="project-element">prowirtschaft</div>
+        <div data-projects="trufflepig-forensics" class="project-element">trufflepig-forensics</div>
+      </div>
       <div
         id="projects-root-threed"
         style="display: block; position: sticky; top: 0; height: 100vh"
