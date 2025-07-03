@@ -40,6 +40,7 @@ import getApiData from "./images";
 import { devLog, devWarn, devError } from './utils/devLog';
 import ErrorBoundary from './components/ErrorBoundary';
 import ThreeErrorBoundary from './components/ThreeErrorBoundary';
+import Env from "./Env";
 
 gsap.registerPlugin(ScrollTrigger);
 
@@ -135,6 +136,8 @@ const App = ({ }) => {
             headingRef={headingRef}
           />
 
+          {/* <Environment preset="city" /> */}
+
           {/* <Resize width={1000} height={1000}> */}
           {/* <ProjectPlane
             ref={projectTextRef}
@@ -153,6 +156,7 @@ const App = ({ }) => {
             castShadow
           /> */}
 
+          <Env />
           <ProjekteText
             ref={headingRef}
             position={[-4.7, 7.8, -3]}
