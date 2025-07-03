@@ -33,7 +33,7 @@ const calculateLookAtQuaternion = (
 
 const clearActiveProjectClasses = () => {
   devLog("Clearing active project classes");
-  const allProjectElements = document.querySelectorAll("[data-projects]");
+  const allProjectElements = document.querySelectorAll("div[data-three='thumbnail'].project-links-item");
   allProjectElements.forEach((el) => {
     el.classList.remove("active");
   });
@@ -333,7 +333,8 @@ function Frame({ url, c = new THREE.Color(), selectedFrameId, ...props }) {
   const handleLinkClick = (e) => {
     devLog("Frame clicked, handling link logic:", props);
     if (props.slug) {
-      const targetSelector = `[data-projects="${props.slug}"]`;
+      // Look for element with the slug as a class name
+      const targetSelector = `div[data-three='thumbnail'].project-links-item.${props.slug}`;
       devLog("Looking for element with selector:", targetSelector);
       const targetElement = document.querySelector(targetSelector);
 
@@ -341,11 +342,13 @@ function Frame({ url, c = new THREE.Color(), selectedFrameId, ...props }) {
         devLog("Found target element:", targetElement);
         devLog("Current classes on target element:", targetElement.className);
 
-        const allProjectElements = document.querySelectorAll("[data-projects]");
+        const allProjectElements = document.querySelectorAll("div[data-three='thumbnail'].project-links-item");
         devLog("Found all project elements:", allProjectElements.length);
 
         allProjectElements.forEach((el) => {
-          devLog("Removing 'active' class from:", el.getAttribute('data-projects'));
+          const classNames = el.className.split(' ');
+          const elementSlug = classNames.find(cls => cls !== 'project-links-item' && cls !== 'project-links-item') || '';
+          devLog("Removing 'active' class from:", elementSlug);
           el.classList.remove("active");
         });
 
@@ -353,10 +356,13 @@ function Frame({ url, c = new THREE.Color(), selectedFrameId, ...props }) {
         targetElement.classList.add("active");
         devLog("New classes on target element:", targetElement.className);
       } else {
-        devWarn(`Element with data-projects="${props.slug}" not found.`);
-        devLog("Available data-projects elements:",
-          Array.from(document.querySelectorAll("[data-projects]"))
-            .map(el => el.getAttribute('data-projects'))
+        devWarn(`Element with class "${props.slug}" not found.`);
+        devLog("Available project elements:",
+          Array.from(document.querySelectorAll("div[data-three='thumbnail'].project-links-item"))
+            .map(el => {
+              const classNames = el.className.split(' ');
+              return classNames.find(cls => cls !== 'project-links-item' && cls !== 'project-links-item') || '';
+            })
         );
       }
     } else {

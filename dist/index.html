@@ -1,80 +1,224 @@
 <!DOCTYPE html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <link rel="icon" type="image/svg+xml" href="/vite.svg" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Vite + React</title>
-    <style>
-      .project-container {
-        position: fixed;
-        top: 20px;
-        right: 20px;
-        z-index: 1000;
-        background: rgba(0, 0, 0, 0.8);
-        padding: 20px;
-        border-radius: 10px;
-        color: white;
-      }
-      .project-element {
-        padding: 5px 10px;
-        margin: 5px 0;
-        cursor: pointer;
-        transition: all 0.3s ease;
-      }
-      .project-element.active {
-        background: #f0ff6c;
-        color: black;
-        border-radius: 5px;
-      }
-    </style>
-    <script type="module" crossorigin src="/assets/index-C55yqJk8.js"></script>
-    <link rel="stylesheet" crossorigin href="/assets/index-Q93CVET9.css">
-  </head>
-  <body>
-    <div style="position: relative">
-      <div class="project-container">
-        <div data-projects="tankstelle-scheyern" class="project-element">tankstelle-scheyern</div>
-        <div data-projects="shikido" class="project-element">shikido</div>
-        <div data-projects="natural-spirit" class="project-element">natural-spirit</div>
-        <div data-projects="la-fee-dor" class="project-element">la-fee-dor</div>
-        <div data-projects="jasminboxing" class="project-element">jasminboxing</div>
-        <div data-projects="jadestein" class="project-element">jadestein</div>
-        <div data-projects="badesarian-raptor" class="project-element">badesarian-raptor</div>
-        <div data-projects="raumglanz24" class="project-element">raumglanz24</div>
-        <div data-projects="reumgstudio24" class="project-element">reumgstudio24</div>
-        <div data-projects="linea-d" class="project-element">linea-d</div>
-        <div data-projects="prowirtschaft" class="project-element">prowirtschaft</div>
-        <div data-projects="trufflepig-forensics" class="project-element">trufflepig-forensics</div>
+
+<head>
+  <meta charset="UTF-8" />
+  <link rel="icon" type="image/svg+xml" href="/vite.svg" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Vite + React</title>
+  <style>
+    .project-container {
+      position: fixed;
+      top: 20px;
+      right: 20px;
+      z-index: 1000;
+      background: rgba(0, 0, 0, 0.8);
+      padding: 20px;
+      border-radius: 10px;
+      color: white;
+    }
+
+    .project-element {
+      padding: 5px 10px;
+      margin: 5px 0;
+      cursor: pointer;
+      transition: all 0.3s ease;
+    }
+
+    .project-element.active {
+      background: #f0ff6c;
+      color: black;
+      border-radius: 5px;
+    }
+  </style>
+  <script type="module" crossorigin src="/assets/index-cbv9oUIk.js"></script>
+  <link rel="stylesheet" crossorigin href="/assets/index-Q93CVET9.css">
+</head>
+
+<body>
+  <div style="position: relative">
+    <div class="project-links-wrapper" style="z-index: -1; display: none; overflow: hidden;">
+      <div class="project-links-list">
+        <div data-three="thumbnail" class="project-links-item tankstelle-scheyern">
+          <div class="project-link-container">
+            <div class="project-link-content">
+              <h2 class="project-heading">Tankstelle Scheyern</h2>
+              <p class="project-paragraph">Website, CI, Brochure</p>
+            </div><a href="/works-new/tankstelle-scheyern" class="project-button w-button">DETAILS ➜</a>
+          </div><img
+            src="https://cdn.prod.website-files.com/678907d8717d9b914d9d4b48/685d3ceeccd2a15e6f251a02_Car_Logo_Mountain_2.jpg"
+            loading="lazy" alt="" sizes="100vw"
+            srcset="https://cdn.prod.website-files.com/678907d8717d9b914d9d4b48/685d3ceeccd2a15e6f251a02_Car_Logo_Mountain_2-p-500.jpg 500w, https://cdn.prod.website-files.com/678907d8717d9b914d9d4b48/685d3ceeccd2a15e6f251a02_Car_Logo_Mountain_2-p-800.jpg 800w, https://cdn.prod.website-files.com/678907d8717d9b914d9d4b48/685d3ceeccd2a15e6f251a02_Car_Logo_Mountain_2.jpg 1080w"
+            class="project-thumbnail">
+        </div>
+        <div data-three="thumbnail" class="project-links-item shikido">
+          <div class="project-link-container">
+            <div class="project-link-content">
+              <h2 class="project-heading">Shikido</h2>
+              <p class="project-paragraph">Website, CI</p>
+            </div><a href="/works-new/shikido" class="project-button w-button">DETAILS ➜</a>
+          </div><img
+            src="https://cdn.prod.website-files.com/678907d8717d9b914d9d4b48/67adcba058bd337ba149047c_66cc51a1bae7c85963cb8666_Ipad_Shikido.jpg"
+            loading="lazy" alt="" sizes="100vw"
+            srcset="https://cdn.prod.website-files.com/678907d8717d9b914d9d4b48/67adcba058bd337ba149047c_66cc51a1bae7c85963cb8666_Ipad_Shikido-p-500.jpg 500w, https://cdn.prod.website-files.com/678907d8717d9b914d9d4b48/67adcba058bd337ba149047c_66cc51a1bae7c85963cb8666_Ipad_Shikido-p-800.jpg 800w, https://cdn.prod.website-files.com/678907d8717d9b914d9d4b48/67adcba058bd337ba149047c_66cc51a1bae7c85963cb8666_Ipad_Shikido.jpg 819w"
+            class="project-thumbnail">
+        </div>
+        <div data-three="thumbnail" class="project-links-item naturalspirit">
+          <div class="project-link-container">
+            <div class="project-link-content">
+              <h2 class="project-heading">Natural Spirit</h2>
+              <p class="project-paragraph">Website, CI</p>
+            </div><a href="/works-new/naturalspirit" class="project-button w-button">DETAILS ➜</a>
+          </div><img
+            src="https://cdn.prod.website-files.com/678907d8717d9b914d9d4b48/685d469db39b45d479080c62_Visitenkarte1.jpg"
+            loading="lazy" alt="" sizes="100vw"
+            srcset="https://cdn.prod.website-files.com/678907d8717d9b914d9d4b48/685d469db39b45d479080c62_Visitenkarte1-p-500.jpg 500w, https://cdn.prod.website-files.com/678907d8717d9b914d9d4b48/685d469db39b45d479080c62_Visitenkarte1-p-800.jpg 800w, https://cdn.prod.website-files.com/678907d8717d9b914d9d4b48/685d469db39b45d479080c62_Visitenkarte1.jpg 933w"
+            class="project-thumbnail">
+        </div>
+        <div data-three="thumbnail" class="project-links-item lafeedor">
+          <div class="project-link-container">
+            <div class="project-link-content">
+              <h2 class="project-heading">La Fee Dor</h2>
+              <p class="project-paragraph">Website, Shop, CI</p>
+            </div><a href="/works-new/lafeedor" class="project-button w-button">DETAILS ➜</a>
+          </div><img
+            src="https://cdn.prod.website-files.com/678907d8717d9b914d9d4b48/685d12c8ec112b23bb391e08_lfdmodel.jpg"
+            loading="lazy" alt="" sizes="100vw"
+            srcset="https://cdn.prod.website-files.com/678907d8717d9b914d9d4b48/685d12c8ec112b23bb391e08_lfdmodel-p-500.jpg 500w, https://cdn.prod.website-files.com/678907d8717d9b914d9d4b48/685d12c8ec112b23bb391e08_lfdmodel.jpg 720w"
+            class="project-thumbnail">
+        </div>
+        <div data-three="thumbnail" class="project-links-item jasminbooking">
+          <div class="project-link-container">
+            <div class="project-link-content">
+              <h2 class="project-heading">Jasminbooking</h2>
+              <p class="project-paragraph">Website, CI</p>
+            </div><a href="/works-new/jasminbooking" class="project-button w-button">DETAILS ➜</a>
+          </div><img
+            src="https://cdn.prod.website-files.com/678907d8717d9b914d9d4b48/685d1121573b93deab65ad37_Jasminbooknig_mockup.jpg"
+            loading="lazy" alt="" sizes="100vw"
+            srcset="https://cdn.prod.website-files.com/678907d8717d9b914d9d4b48/685d1121573b93deab65ad37_Jasminbooknig_mockup-p-500.jpg 500w, https://cdn.prod.website-files.com/678907d8717d9b914d9d4b48/685d1121573b93deab65ad37_Jasminbooknig_mockup.jpg 720w"
+            class="project-thumbnail">
+        </div>
+        <div data-three="thumbnail" class="project-links-item jadestein">
+          <div class="project-link-container">
+            <div class="project-link-content">
+              <h2 class="project-heading">Jadestein</h2>
+              <p class="project-paragraph">Website, Buisnesscard, CI</p>
+            </div><a href="/works-new/jadestein" class="project-button w-button">DETAILS ➜</a>
+          </div><img
+            src="https://cdn.prod.website-files.com/678907d8717d9b914d9d4b48/685d0a08ea605c1481d59fca_Jadestein_Businesscard.jpg"
+            loading="lazy" alt="" class="project-thumbnail">
+        </div>
+        <div data-three="thumbnail" class="project-links-item bavarian-raptor">
+          <div class="project-link-container">
+            <div class="project-link-content">
+              <h2 class="project-heading">Bavarian Raptor</h2>
+              <p class="project-paragraph">Website, Shop</p>
+            </div><a href="/works-new/bavarian-raptor" class="project-button w-button">DETAILS ➜</a>
+          </div><img
+            src="https://cdn.prod.website-files.com/678907d8717d9b914d9d4b48/685d03d0b12a73f60ecc534c_67c9655d5a4c74febe2af012_Businesscards_blendover.gif"
+            loading="lazy" alt="" class="project-thumbnail">
+        </div>
+        <div data-three="thumbnail" class="project-links-item raumglanz24">
+          <div class="project-link-container">
+            <div class="project-link-content">
+              <h2 class="project-heading">Raumglanz24</h2>
+              <p class="project-paragraph">Website, Branding</p>
+            </div><a href="/works-new/raumglanz24" class="project-button w-button">DETAILS ➜</a>
+          </div><img
+            src="https://cdn.prod.website-files.com/678907d8717d9b914d9d4b48/685d380a218625d7cff7f619_Artboard%202.png"
+            loading="lazy" alt="" sizes="100vw"
+            srcset="https://cdn.prod.website-files.com/678907d8717d9b914d9d4b48/685d380a218625d7cff7f619_Artboard%202-p-500.png 500w, https://cdn.prod.website-files.com/678907d8717d9b914d9d4b48/685d380a218625d7cff7f619_Artboard%202-p-800.png 800w, https://cdn.prod.website-files.com/678907d8717d9b914d9d4b48/685d380a218625d7cff7f619_Artboard%202.png 1004w"
+            class="project-thumbnail">
+        </div>
+        <div data-three="thumbnail" class="project-links-item renderstudio24">
+          <div class="project-link-container">
+            <div class="project-link-content">
+              <h2 class="project-heading">Renderstudio24</h2>
+              <p class="project-paragraph">Render, Website, CI</p>
+            </div><a href="/works-new/renderstudio24" class="project-button w-button">DETAILS ➜</a>
+          </div><img
+            src="https://cdn.prod.website-files.com/678907d8717d9b914d9d4b48/685d3a3122f7e724535c5852_renderstudio24.jpg"
+            loading="lazy" alt="" sizes="100vw"
+            srcset="https://cdn.prod.website-files.com/678907d8717d9b914d9d4b48/685d3a3122f7e724535c5852_renderstudio24-p-500.jpg 500w, https://cdn.prod.website-files.com/678907d8717d9b914d9d4b48/685d3a3122f7e724535c5852_renderstudio24-p-800.jpg 800w, https://cdn.prod.website-files.com/678907d8717d9b914d9d4b48/685d3a3122f7e724535c5852_renderstudio24-p-1080.jpg 1080w, https://cdn.prod.website-files.com/678907d8717d9b914d9d4b48/685d3a3122f7e724535c5852_renderstudio24-p-1600.jpg 1600w, https://cdn.prod.website-files.com/678907d8717d9b914d9d4b48/685d3a3122f7e724535c5852_renderstudio24-p-2000.jpg 2000w, https://cdn.prod.website-files.com/678907d8717d9b914d9d4b48/685d3a3122f7e724535c5852_renderstudio24-p-2600.jpg 2600w, https://cdn.prod.website-files.com/678907d8717d9b914d9d4b48/685d3a3122f7e724535c5852_renderstudio24-p-3200.jpg 3200w, https://cdn.prod.website-files.com/678907d8717d9b914d9d4b48/685d3a3122f7e724535c5852_renderstudio24.jpg 3342w"
+            class="project-thumbnail">
+        </div>
+        <div data-three="thumbnail" class="project-links-item linea-d">
+          <div class="project-link-container">
+            <div class="project-link-content">
+              <h2 class="project-heading">Linea-D</h2>
+              <p class="project-paragraph">Website, Messestand, Render</p>
+            </div><a href="/works-new/linea-d" class="project-button w-button">DETAILS ➜</a>
+          </div><img
+            src="https://cdn.prod.website-files.com/678907d8717d9b914d9d4b48/685d17e21dff103b1188adcd_frame_1_total_view.jpg"
+            loading="lazy" alt="" sizes="100vw"
+            srcset="https://cdn.prod.website-files.com/678907d8717d9b914d9d4b48/685d17e21dff103b1188adcd_frame_1_total_view-p-500.jpg 500w, https://cdn.prod.website-files.com/678907d8717d9b914d9d4b48/685d17e21dff103b1188adcd_frame_1_total_view-p-800.jpg 800w, https://cdn.prod.website-files.com/678907d8717d9b914d9d4b48/685d17e21dff103b1188adcd_frame_1_total_view-p-1080.jpg 1080w, https://cdn.prod.website-files.com/678907d8717d9b914d9d4b48/685d17e21dff103b1188adcd_frame_1_total_view-p-1600.jpg 1600w, https://cdn.prod.website-files.com/678907d8717d9b914d9d4b48/685d17e21dff103b1188adcd_frame_1_total_view-p-2000.jpg 2000w, https://cdn.prod.website-files.com/678907d8717d9b914d9d4b48/685d17e21dff103b1188adcd_frame_1_total_view-p-2600.jpg 2600w, https://cdn.prod.website-files.com/678907d8717d9b914d9d4b48/685d17e21dff103b1188adcd_frame_1_total_view.jpg 3000w"
+            class="project-thumbnail">
+        </div>
+        <div data-three="thumbnail" class="project-links-item prowirtschaft">
+          <div class="project-link-container">
+            <div class="project-link-content">
+              <h2 class="project-heading">ProWirtschaft</h2>
+              <p class="project-paragraph">Branding, Website, Logo</p>
+            </div><a href="/works-new/prowirtschaft" class="project-button w-button">DETAILS ➜</a>
+          </div><img
+            src="https://cdn.prod.website-files.com/678907d8717d9b914d9d4b48/685d3663c50aa1f58a9812ec_prowirtschaft.jpg"
+            loading="lazy" alt="" sizes="100vw"
+            srcset="https://cdn.prod.website-files.com/678907d8717d9b914d9d4b48/685d3663c50aa1f58a9812ec_prowirtschaft-p-500.jpg 500w, https://cdn.prod.website-files.com/678907d8717d9b914d9d4b48/685d3663c50aa1f58a9812ec_prowirtschaft-p-800.jpg 800w, https://cdn.prod.website-files.com/678907d8717d9b914d9d4b48/685d3663c50aa1f58a9812ec_prowirtschaft-p-1080.jpg 1080w, https://cdn.prod.website-files.com/678907d8717d9b914d9d4b48/685d3663c50aa1f58a9812ec_prowirtschaft-p-1600.jpg 1600w, https://cdn.prod.website-files.com/678907d8717d9b914d9d4b48/685d3663c50aa1f58a9812ec_prowirtschaft-p-2000.jpg 2000w, https://cdn.prod.website-files.com/678907d8717d9b914d9d4b48/685d3663c50aa1f58a9812ec_prowirtschaft-p-2600.jpg 2600w, https://cdn.prod.website-files.com/678907d8717d9b914d9d4b48/685d3663c50aa1f58a9812ec_prowirtschaft-p-3200.jpg 3200w, https://cdn.prod.website-files.com/678907d8717d9b914d9d4b48/685d3663c50aa1f58a9812ec_prowirtschaft.jpg 5106w"
+            class="project-thumbnail">
+        </div>
+        <div data-three="thumbnail" class="project-links-item trufflepig-forensics">
+          <div class="project-link-container">
+            <div class="project-link-content">
+              <h2 class="project-heading">Trufflepig Forensics</h2>
+              <p class="project-paragraph">Website, CI</p>
+            </div><a href="/works-new/trufflepig-forensics" class="project-button w-button">DETAILS ➜</a>
+          </div><img
+            src="https://cdn.prod.website-files.com/678907d8717d9b914d9d4b48/685d3ea2cebf88ffa8c4a384_logo_solo_16_9.jpg"
+            loading="lazy" alt="" sizes="100vw"
+            srcset="https://cdn.prod.website-files.com/678907d8717d9b914d9d4b48/685d3ea2cebf88ffa8c4a384_logo_solo_16_9-p-500.jpg 500w, https://cdn.prod.website-files.com/678907d8717d9b914d9d4b48/685d3ea2cebf88ffa8c4a384_logo_solo_16_9-p-800.jpg 800w, https://cdn.prod.website-files.com/678907d8717d9b914d9d4b48/685d3ea2cebf88ffa8c4a384_logo_solo_16_9-p-1080.jpg 1080w, https://cdn.prod.website-files.com/678907d8717d9b914d9d4b48/685d3ea2cebf88ffa8c4a384_logo_solo_16_9-p-1600.jpg 1600w, https://cdn.prod.website-files.com/678907d8717d9b914d9d4b48/685d3ea2cebf88ffa8c4a384_logo_solo_16_9-p-2000.jpg 2000w, https://cdn.prod.website-files.com/678907d8717d9b914d9d4b48/685d3ea2cebf88ffa8c4a384_logo_solo_16_9-p-2600.jpg 2600w, https://cdn.prod.website-files.com/678907d8717d9b914d9d4b48/685d3ea2cebf88ffa8c4a384_logo_solo_16_9.jpg 3200w"
+            class="project-thumbnail">
+        </div>
+        <div data-three="thumbnail" class="project-links-item jasminbook">
+          <div class="project-link-container">
+            <div class="project-link-content">
+              <h2 class="project-heading">Jasminbook</h2>
+              <p class="project-paragraph">Branding</p>
+            </div><a href="/works-new/jasminbook" class="project-button w-button">DETAILS ➜</a>
+          </div><img
+            src="https://cdn.prod.website-files.com/678907d8717d9b914d9d4b48/685d0e10c792cdbd94b20da0_FFL5Mockup1.jpg"
+            loading="lazy" alt="" sizes="100vw"
+            srcset="https://cdn.prod.website-files.com/678907d8717d9b914d9d4b48/685d0e10c792cdbd94b20da0_FFL5Mockup1-p-500.jpg 500w, https://cdn.prod.website-files.com/678907d8717d9b914d9d4b48/685d0e10c792cdbd94b20da0_FFL5Mockup1.jpg 720w"
+            class="project-thumbnail">
+        </div>
+        <div class="w-embed">
+          <style>
+            .project-links-list.show-all .project-links-item {
+              position: relative !important;
+              transform: translate(0, 0) !important;
+            }
+          </style>
+        </div>
       </div>
-      <div
-        id="projects-root-threed"
-        style="display: block; position: sticky; top: 0; height: 100vh"
-      ></div>
-      <div
-        style="
+    </div>
+    <div id="projects-root-threed" style="display: block; position: sticky; top: 0; height: 100vh; z-index: 6;"></div>
+    <div style="
           height: 200vh;
           width: 100vw;
           background: linear-gradient(to bottom, #910808, #271e1e);
-        "
-      >
-        <div
-          id="section-1"
-          style="
+        ">
+      <div id="section-1" style="
             height: 100vh;
             width: 100vw;
             background: linear-gradient(to bottom, #f0ff6c, #ccc);
-          "
-        ></div>
-        <div
-          id="section-2"
-          style="
+          "></div>
+      <div id="section-2" style="
             height: 100vh;
             width: 100vw;
             background: linear-gradient(to bottom, #2a4ef3, #fff);
-          "
-        ></div>
-      </div>
+          "></div>
     </div>
-  </body>
+  </div>
+</body>
+
 </html>

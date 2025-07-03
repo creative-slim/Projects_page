@@ -80,19 +80,33 @@ const App = ({ }) => {
   const headingRef = useRef(); // Create ref for Heading
   const [isZoomed, setIsZoomed] = useState(false); // State to track zoom
   const [images, setImages] = useState([]);
+  const [isLoading, setIsLoading] = useState(true);
   const [sceneError, setSceneError] = useState(null);
 
   useEffect(() => {
-    const fetchImages = async () => {
+    const extractImagesFromDOM = async () => {
       try {
-        const data = await getApiData();
-        setImages(data);
+        setIsLoading(true);
+        // Ensure DOM is ready before extraction
+        if (document.readyState === 'loading') {
+          document.addEventListener('DOMContentLoaded', async () => {
+            const data = await getApiData();
+            setImages(data);
+            setIsLoading(false);
+          });
+        } else {
+          // DOM is already ready
+          const data = await getApiData();
+          setImages(data);
+          setIsLoading(false);
+        }
       } catch (error) {
-        devError('Failed to fetch images:', error);
+        devError('Failed to extract images from DOM:', error);
         setSceneError(error);
+        setIsLoading(false);
       }
     };
-    fetchImages();
+    extractImagesFromDOM();
   }, []);
 
   const handleSceneError = (error) => {
@@ -166,16 +180,24 @@ const App = ({ }) => {
           />
 
 
-          <InnerScene
-            images={images}
-            ref={innerSceneRef}
-            setIsZoomed={setIsZoomed}
-            // Pass down section 2 camera targets
-            section2Position={section2Position}
-            section2LookAtTarget={section2LookAtTarget}
-            // Pass down FOV related props
-            initialFov={INITIAL_FOV}
-          />
+          {isLoading ? (
+            <Html center>
+              <div style={{ color: 'white', fontSize: '18px' }}>
+                Loading projects from DOM...
+              </div>
+            </Html>
+          ) : (
+            <InnerScene
+              images={images}
+              ref={innerSceneRef}
+              setIsZoomed={setIsZoomed}
+              // Pass down section 2 camera targets
+              section2Position={section2Position}
+              section2LookAtTarget={section2LookAtTarget}
+              // Pass down FOV related props
+              initialFov={INITIAL_FOV}
+            />
+          )}
           {/* <Environment preset="city" /> */}
           {/* <OrbitControls /> */}
           <EffectComposer>
