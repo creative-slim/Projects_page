@@ -309,6 +309,14 @@ function SceneSetup({ projectTextRef, isZoomed, headingRef }) {
           duration: 1,
         },
         "section2"
+      )
+      .to(
+        headingRef.current.position,
+        {
+          y: 2.8, // Move header down by 5 units (from 7.8 to 2.8)
+          duration: 2, // Match camera duration
+        },
+        "section2+=1" // Start with slight delay after camera starts moving
       );
 
     return () => {
