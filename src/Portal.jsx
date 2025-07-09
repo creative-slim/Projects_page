@@ -1,6 +1,6 @@
 import React, { useRef } from 'react';
-import { useFrame } from '@react-three/fiber';
 import * as THREE from 'three';
+import { useFrameRate } from './utils/useFrameRate';
 
 // Custom shader for animated rainbow gradient
 const getGradientShader = (opacity = 0.7, speed = 0.5, phase = 0) => ({
@@ -54,13 +54,13 @@ export default function Portal({
 }) {
     const meshRefs = useRef([]);
 
-    useFrame((state) => {
+    useFrameRate((state) => {
         meshRefs.current.forEach((ref, i) => {
             if (ref && ref.material.uniforms) {
                 ref.material.uniforms.time.value = state.clock.elapsedTime;
             }
         });
-    });
+    }, 30); // Reduced from 60fps to 30fps
 
     return (
         <group position={position} scale={scale}>

@@ -223,6 +223,64 @@ function CameraUpdater({ lookAtTarget, isZoomed }) {
   });
   return null;
 }
+
+// Mouse camera controller for subtle horizontal movement using lerp
+function MouseCameraController({ isZoomed }) {
+  const { camera } = useThree();
+  const mouseX = useRef(0);
+  const basePositionRef = useRef(new THREE.Vector3());
+  const targetPositionRef = useRef(new THREE.Vector3());
+
+  // Mouse movement sensitivity and range
+  const SENSITIVITY = 0.3;
+  const MAX_OFFSET = 1.0;
+  const MIN_X_LIMIT = -0.5;
+  const MAX_X_LIMIT = 0.5;
+  const LERP_SPEED = 0.05;
+  const DAMPENING_ZONE = 0.3;
+
+  useEffect(() => {
+    const handleMouseMove = (event) => {
+      mouseX.current = (event.clientX / window.innerWidth) * 2 - 1;
+    };
+
+    window.addEventListener('mousemove', handleMouseMove);
+    return () => window.removeEventListener('mousemove', handleMouseMove);
+  }, []);
+
+  useFrame(() => {
+    if (!isZoomed) {
+      // Update base position when GSAP moves camera
+      if (Math.abs(camera.position.x - basePositionRef.current.x) > 0.1) {
+        basePositionRef.current.copy(camera.position);
+      }
+
+      // Calculate target position
+      const targetX = basePositionRef.current.x + (mouseX.current * MAX_OFFSET * SENSITIVITY);
+
+      // Simple clamping with reduced dampening
+      const clampedX = Math.max(MIN_X_LIMIT, Math.min(MAX_X_LIMIT, targetX));
+
+      // Light dampening only at extreme edges
+      let dampeningFactor = 1;
+      if (mouseX.current < 0 && targetX < MIN_X_LIMIT + DAMPENING_ZONE) {
+        dampeningFactor = 0.7;
+      } else if (mouseX.current > 0 && targetX > MAX_X_LIMIT - DAMPENING_ZONE) {
+        dampeningFactor = 0.7;
+      }
+
+      // Apply dampening and set target
+      const finalX = basePositionRef.current.x + (clampedX - basePositionRef.current.x) * dampeningFactor;
+      targetPositionRef.current.set(finalX, camera.position.y, camera.position.z);
+
+      // Faster, more responsive camera movement
+      camera.position.lerp(targetPositionRef.current, LERP_SPEED);
+    }
+  });
+
+  return null;
+}
+
 // New component to handle GSAP setup and useThree hook
 function SceneSetup({ projectTextRef, isZoomed, headingRef }) {
   // Add headingRef prop
@@ -245,12 +303,12 @@ function SceneSetup({ projectTextRef, isZoomed, headingRef }) {
         start: "top top",
         end: "+=100%",
         scrub: 1,
-        snap: {
-          snapTo: "labels", // Re-enable snapTo
-          duration: { min: 0.2, max: 1 },
-          delay: 0.1,
-          ease: "power1.inOut",
-        },
+        // snap: {
+        //   snapTo: "labels", // Re-enable snapTo
+        //   duration: { min: 0.5, max: 1 },
+        //   delay: 0.1,
+        //   ease: "power1.inOut",
+        // },
         // markers: true,
         // Store the instance
         onInit: (self) => (scrollTriggerRef.current = self),
@@ -314,9 +372,9 @@ function SceneSetup({ projectTextRef, isZoomed, headingRef }) {
         headingRef.current.position,
         {
           y: 2.8, // Move header down by 5 units (from 7.8 to 2.8)
-          duration: 2, // Match camera duration
+          duration: 1, // Match camera duration
         },
-        "section2+=1" // Start with slight delay after camera starts moving
+        "section2+=0.2" // Start with slight delay after camera starts moving
       );
 
     return () => {
@@ -340,8 +398,13 @@ function SceneSetup({ projectTextRef, isZoomed, headingRef }) {
     }
   }, [isZoomed]); // Run when isZoomed changes
 
-  // Pass isZoomed to CameraUpdater
-  return <CameraUpdater lookAtTarget={proxyLookAtTarget} isZoomed={isZoomed} />;
+  // Pass isZoomed to CameraUpdater and MouseCameraController
+  return (
+    <>
+      <CameraUpdater lookAtTarget={proxyLookAtTarget} isZoomed={isZoomed} />
+      <MouseCameraController isZoomed={isZoomed} />
+    </>
+  );
 }
 
 

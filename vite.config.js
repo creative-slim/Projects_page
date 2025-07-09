@@ -1,8 +1,21 @@
-import { defineConfig } from "vite";
-import react from "@vitejs/plugin-react";
-import glsl from "vite-plugin-glsl";
+import { defineConfig } from 'vite'
+import react from '@vitejs/plugin-react'
 
-// https://vite.dev/config/
+// https://vitejs.dev/config/
 export default defineConfig({
-  plugins: [react(), glsl()],
-});
+  plugins: [react()],
+  build: {
+    rollupOptions: {
+      output: {
+        manualChunks: undefined, // disables code splitting
+        entryFileNames: 'bundle.[hash].js', // cache-busting hash
+        chunkFileNames: 'bundle.[hash].js',
+        assetFileNames: 'bundle.[hash].[ext]'
+      }
+    },
+    cssCodeSplit: false, // inlines CSS into JS
+    minify: 'terser',
+    sourcemap: false, // set to true if you want debugging
+    target: 'es2015'
+  }
+})

@@ -17,6 +17,9 @@ import Portal from './Portal';
 import { TextureLoader } from 'three';
 import { useLoader } from '@react-three/fiber';
 import { devLog, devWarn, devError } from './utils/devLog';
+import { useOptimizedParticles } from './utils/useOptimizedParticles';
+import { useFrameRate } from './utils/useFrameRate';
+import { useCachedElements } from './utils/useCachedElements';
 
 const GOLDENRATIO = 1;
 
@@ -31,12 +34,9 @@ const calculateLookAtQuaternion = (
   return new THREE.Quaternion().setFromRotationMatrix(_matrix);
 };
 
-const clearActiveProjectClasses = () => {
-  devLog("Clearing active project classes");
-  const allProjectElements = document.querySelectorAll("div[data-three='thumbnail'].project-links-item");
-  allProjectElements.forEach((el) => {
-    el.classList.remove("active");
-  });
+// Use cached DOM elements for better performance
+const useProjectElements = () => {
+  return useCachedElements("div[data-three='thumbnail'].project-links-item");
 };
 
 function getUniquePortalConfigs(seed = 0) {
@@ -78,6 +78,7 @@ export default function Frames({
   const [isAnimatingOut, setIsAnimatingOut] = useState(false);
   const [selectedFrameId, setSelectedFrameId] = useState(null);
   const targetFovRef = useRef(initialFov);
+  const { clearActiveClasses } = useProjectElements();
 
   // Refs for animation targets
   const finalZoomInPosition = useRef(new THREE.Vector3());
@@ -130,7 +131,7 @@ export default function Frames({
         onComplete: () => {
           gsap.delayedCall(0.5, () => {
             devLog("Frames: Zoom OUT animation complete (after delay)");
-            clearActiveProjectClasses();
+            clearActiveClasses();
             setIsAnimatingOut(false);
             setIsZoomed(false);
             setSelectedFrameId(null);
@@ -220,13 +221,8 @@ function Frame({ url, c = new THREE.Color(), selectedFrameId, ...props }) {
   const isActive = selectedFrameId === name;
   useCursor(hovered);
 
-  // Create initial particle positions and velocities
-  const particlePositions = useRef(
-    new Float32Array(50 * 3).map(() => (Math.random() - 0.5) * 2)
-  );
-  const particleVelocities = useRef(
-    new Float32Array(50 * 3).map(() => (Math.random() - 0.5) * 0.001)
-  );
+  // Use optimized particle system
+  const { positions: particlePositions, count: particleCount } = useOptimizedParticles(50);
 
   const imageTexture = useLoader(TextureLoader, url);
   const mask = useLoader(TextureLoader, 'https://files.creative-directors.com/creative-website/creative25/project-masks/circle-mask.png');
@@ -250,14 +246,7 @@ function Frame({ url, c = new THREE.Color(), selectedFrameId, ...props }) {
     };
   }, []);
 
-  // Optimize particle count based on distance
-  const getParticleCount = (distance) => {
-    if (distance > 5) return 10;  // Far away
-    if (distance > 3) return 25;  // Medium distance
-    return 50;  // Close up
-  };
-
-  useFrame((state, dt) => {
+  useFrameRate((state, dt) => {
     image.current.material.zoom =
       2 + Math.sin(rnd * 10000 + state.clock.elapsedTime / 3) / 2;
 
@@ -279,77 +268,24 @@ function Frame({ url, c = new THREE.Color(), selectedFrameId, ...props }) {
       });
     }
 
-    // Optimize particle updates based on distance
+    // Update particle positions from optimized system
     if (particlesRef.current) {
-      const distance = state.camera.position.distanceTo(particlesRef.current.position);
-      const particleCount = getParticleCount(distance);
-
-      // Only update if we're close enough
-      if (distance < 5) {
-        const positions = particlesRef.current.geometry.attributes.position.array;
-        const velocities = particleVelocities.current;
-
-        for (let i = 0; i < positions.length; i += 3) {
-          // Update positions based on velocities
-          positions[i] += velocities[i];
-          positions[i + 1] += velocities[i + 1];
-          positions[i + 2] += velocities[i + 2];
-
-          // Add some random acceleration
-          velocities[i] += (Math.random() - 0.5) * 0.0005;
-          velocities[i + 1] += (Math.random() - 0.5) * 0.0005;
-          velocities[i + 2] += (Math.random() - 0.5) * 0.0005;
-
-          // Dampen velocities
-          velocities[i] *= 0.995;
-          velocities[i + 1] *= 0.995;
-          velocities[i + 2] *= 0.995;
-
-          // Keep particles within bounds
-          const maxRadius = 1.2;
-          const distance = Math.sqrt(
-            positions[i] * positions[i] +
-            positions[i + 1] * positions[i + 1]
-          );
-
-          if (distance > maxRadius) {
-            const angle = Math.atan2(positions[i + 1], positions[i]);
-            positions[i] = Math.cos(angle) * maxRadius;
-            positions[i + 1] = Math.sin(angle) * maxRadius;
-
-            // Bounce off the boundary
-            velocities[i] *= -0.2;
-            velocities[i + 1] *= -0.2;
-          }
-
-          // Keep z position within bounds
-          if (Math.abs(positions[i + 2]) > 0.2) {
-            positions[i + 2] = Math.sign(positions[i + 2]) * 0.2;
-            velocities[i + 2] *= -0.2;
-          }
-        }
-        particlesRef.current.geometry.attributes.position.needsUpdate = true;
+      const positions = particlesRef.current.geometry.attributes.position.array;
+      for (let i = 0; i < particleCount * 3; i++) {
+        positions[i] = particlePositions[i];
       }
+      particlesRef.current.geometry.attributes.position.needsUpdate = true;
     }
-  });
+  }, 30); // Reduced from 60fps to 30fps
+
+  const { setActiveBySlug } = useProjectElements();
 
   const handleLinkClick = (e) => {
     devLog("Frame clicked, handling link logic:", props);
     if (props.slug) {
-      // Remove 'active' from all project-links-item elements
-      const allProjectElements = document.querySelectorAll("div[data-three='thumbnail'].project-links-item");
-      allProjectElements.forEach((el) => {
-        el.classList.remove("active");
-      });
-      // Find the one whose <a> href ends with the slug
-      const selector = `div[data-three='thumbnail'].project-links-item a[href$='/${props.slug}']`;
-      const link = document.querySelector(selector);
-      if (link) {
-        const projectItem = link.closest("div[data-three='thumbnail'].project-links-item");
-        if (projectItem) {
-          projectItem.classList.add("active");
-          devLog("Added 'active' class to:", projectItem);
-        }
+      const result = setActiveBySlug(props.slug);
+      if (result !== -1) {
+        devLog("Added 'active' class to project item");
       } else {
         devWarn(`No project-links-item found for slug: ${props.slug}`);
       }
@@ -402,16 +338,16 @@ function Frame({ url, c = new THREE.Color(), selectedFrameId, ...props }) {
           <bufferGeometry>
             <bufferAttribute
               attach="attributes-position"
-              count={50}
-              array={particlePositions.current}
+              count={particleCount}
+              array={particlePositions}
               itemSize={3}
             />
           </bufferGeometry>
           <pointsMaterial
             color="#ffffff"
-            size={0.02}
+            size={0.01}
             transparent
-            opacity={0.8}
+            opacity={0.9}
             sizeAttenuation
             blending={THREE.AdditiveBlending}
             depthWrite={false}

@@ -10,20 +10,20 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "@nodetoy/three-nodetoy": "^0.1.36",
     "@react-three/drei": "^10.0.6",
     "@react-three/fiber": "^9.1.2",
     "@react-three/postprocessing": "^3.0.4",
-    "@nodetoy/three-nodetoy": "^0.1.36",
     "gsap": "^3.12.7",
     "leva": "^0.10.0",
     "maath": "0.6.0",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
     "three": "^0.175.0",
+    "three-stdlib": "^2.35.14",
     "uuid-by-string": "4.0.0",
     "vite-plugin-glsl": "^1.4.0",
-    "wouter": "2.11.0",
-    "three-stdlib": "^2.35.14"
+    "wouter": "2.11.0"
   },
   "devDependencies": {
     "@eslint/js": "^9.21.0",
@@ -34,6 +34,7 @@
     "eslint-plugin-react-hooks": "^5.1.0",
     "eslint-plugin-react-refresh": "^0.4.19",
     "globals": "^15.15.0",
+    "terser": "^5.43.1",
     "vite": "^6.2.0"
   }
 }
