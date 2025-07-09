@@ -178,6 +178,9 @@ export default function Frames({
     }
   };
 
+  // Debug: get all slugs from images
+  const allSlugs = images.map(img => img.slug);
+
   return (
     <group
       ref={ref}
@@ -333,37 +336,22 @@ function Frame({ url, c = new THREE.Color(), selectedFrameId, ...props }) {
   const handleLinkClick = (e) => {
     devLog("Frame clicked, handling link logic:", props);
     if (props.slug) {
-      // Look for element with the slug as a class name
-      const targetSelector = `div[data-three='thumbnail'].project-links-item.${props.slug}`;
-      devLog("Looking for element with selector:", targetSelector);
-      const targetElement = document.querySelector(targetSelector);
-
-      if (targetElement) {
-        devLog("Found target element:", targetElement);
-        devLog("Current classes on target element:", targetElement.className);
-
-        const allProjectElements = document.querySelectorAll("div[data-three='thumbnail'].project-links-item");
-        devLog("Found all project elements:", allProjectElements.length);
-
-        allProjectElements.forEach((el) => {
-          const classNames = el.className.split(' ');
-          const elementSlug = classNames.find(cls => cls !== 'project-links-item' && cls !== 'project-links-item') || '';
-          devLog("Removing 'active' class from:", elementSlug);
-          el.classList.remove("active");
-        });
-
-        devLog("Adding 'active' class to:", props.slug);
-        targetElement.classList.add("active");
-        devLog("New classes on target element:", targetElement.className);
+      // Remove 'active' from all project-links-item elements
+      const allProjectElements = document.querySelectorAll("div[data-three='thumbnail'].project-links-item");
+      allProjectElements.forEach((el) => {
+        el.classList.remove("active");
+      });
+      // Find the one whose <a> href ends with the slug
+      const selector = `div[data-three='thumbnail'].project-links-item a[href$='/${props.slug}']`;
+      const link = document.querySelector(selector);
+      if (link) {
+        const projectItem = link.closest("div[data-three='thumbnail'].project-links-item");
+        if (projectItem) {
+          projectItem.classList.add("active");
+          devLog("Added 'active' class to:", projectItem);
+        }
       } else {
-        devWarn(`Element with class "${props.slug}" not found.`);
-        devLog("Available project elements:",
-          Array.from(document.querySelectorAll("div[data-three='thumbnail'].project-links-item"))
-            .map(el => {
-              const classNames = el.className.split(' ');
-              return classNames.find(cls => cls !== 'project-links-item' && cls !== 'project-links-item') || '';
-            })
-        );
+        devWarn(`No project-links-item found for slug: ${props.slug}`);
       }
     } else {
       devWarn("Slug prop is missing from Frame component.");
@@ -380,7 +368,7 @@ function Frame({ url, c = new THREE.Color(), selectedFrameId, ...props }) {
         onPointerOut={() => hover(false)}
         scale={[1, GOLDENRATIO, 0.05]}
         position={[0, GOLDENRATIO / 2, 0]}
-        onClick={handleLinkClick}
+        onClick={(e) => { handleLinkClick(e); }}
       >
         <circleGeometry args={[0.38, 64]} />
         <meshStandardMaterial
