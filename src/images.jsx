@@ -33,7 +33,6 @@ const extractProjectDataFromDOM = () => {
 
     devLog(`Found ${projectElements.length} project elements in DOM`);
     devLog("Project elements:", projectElements.map(el => ({
-      classes: el.className,
       hasImage: !!el.querySelector('img'),
       hasHeading: !!el.querySelector('.project-heading'),
       hasLink: !!el.querySelector('a')
@@ -43,11 +42,17 @@ const extractProjectDataFromDOM = () => {
     const limitedElements = projectElements.slice(0, 9);
 
     const data = limitedElements.map((element, idx) => {
-      // Extract slug from class name (e.g., "project-links-item tankstelle-scheyern" -> "tankstelle-scheyern")
-      const classNames = element.className.split(' ');
-      const slug = classNames.find(cls => cls !== 'project-links-item') || '';
-
-      devLog(`Element ${idx} classes:`, classNames, 'Extracted slug:', slug);
+      // Extract slug from <a href>
+      const linkEl = element.querySelector('a[href]');
+      let slug = '';
+      if (linkEl) {
+        const href = linkEl.getAttribute('href');
+        if (href) {
+          const parts = href.split('/');
+          slug = parts[parts.length - 1] || parts[parts.length - 2] || '';
+        }
+      }
+      devLog(`Element ${idx} extracted slug:`, slug);
 
       // Extract name from heading
       const headingEl = element.querySelector('.project-heading');
@@ -56,10 +61,8 @@ const extractProjectDataFromDOM = () => {
       // Extract image URL from img tag
       const imgEl = element.querySelector('img');
       let imageUrl = '';
-
       if (imgEl) {
         devLog(`Element ${idx} has image:`, imgEl.getAttribute('src'));
-
         // Try to get the best quality image from srcset
         const srcset = imgEl.getAttribute('srcset');
         if (srcset) {
@@ -87,7 +90,6 @@ const extractProjectDataFromDOM = () => {
         devWarn(`Project element ${idx} has no identifiable slug`);
         return null;
       }
-
       if (!imageUrl) {
         devWarn(`Project element ${idx} (${slug}) has no image URL`);
         return null;
