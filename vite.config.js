@@ -16,6 +16,12 @@ export default defineConfig({
     cssCodeSplit: false, // inlines CSS into JS
     minify: 'terser',
     sourcemap: false, // set to true if you want debugging
-    target: 'es2015'
+    target: 'es2015',
+    lib: {
+      entry: 'src/main.jsx', // your entry point
+      name: 'MyWidget',      // global variable name (change as needed)
+      fileName: 'bundle',
+      formats: ['iife']      // <--- THIS IS THE KEY
+    }
   }
 })
