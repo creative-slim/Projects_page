@@ -259,15 +259,6 @@ function Frame({ url, c = new THREE.Color(), selectedFrameId, ...props }) {
       dt
     );
 
-    // Update shader time uniform
-    if (portalRef.current) {
-      portalRef.current.children.forEach(child => {
-        if (child.material.uniforms) {
-          child.material.uniforms.time.value = state.clock.elapsedTime * 0.2;
-        }
-      });
-    }
-
     // Update particle positions from optimized system
     if (particlesRef.current) {
       const positions = particlesRef.current.geometry.attributes.position.array;
@@ -277,6 +268,17 @@ function Frame({ url, c = new THREE.Color(), selectedFrameId, ...props }) {
       particlesRef.current.geometry.attributes.position.needsUpdate = true;
     }
   }, 30); // Reduced from 60fps to 30fps
+
+  // Separate useFrame for smooth portal shader time updates to prevent flickering
+  useFrame((state) => {
+    if (portalRef.current) {
+      portalRef.current.children.forEach(child => {
+        if (child.material.uniforms) {
+          child.material.uniforms.time.value = state.clock.elapsedTime * 0.2;
+        }
+      });
+    }
+  });
 
   const { setActiveBySlug } = useProjectElements();
 
@@ -332,7 +334,7 @@ function Frame({ url, c = new THREE.Color(), selectedFrameId, ...props }) {
           />
         </mesh>
 
-        <Portal position={[0, 0, 0.35]} scale={[1, GOLDENRATIO, 1]} configs={portalConfigs} />
+        <Portal ref={portalRef} position={[0, 0, 0.35]} scale={[1, GOLDENRATIO, 1]} configs={portalConfigs} />
         {/* Energy particles */}
         <points ref={particlesRef} raycast={() => null}>
           <bufferGeometry>

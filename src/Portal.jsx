@@ -1,6 +1,6 @@
-import React, { useRef } from 'react';
+import React, { useRef, forwardRef } from 'react';
 import * as THREE from 'three';
-import { useFrameRate } from './utils/useFrameRate';
+import { useFrame } from '@react-three/fiber';
 
 // Custom shader for animated rainbow gradient
 const getGradientShader = (opacity = 0.7, speed = 0.5, phase = 0) => ({
@@ -43,7 +43,7 @@ const getGradientShader = (opacity = 0.7, speed = 0.5, phase = 0) => ({
  * @param {Array} [props.position] - Position of the group
  * @param {Array} [props.scale] - Scale of the group
  */
-export default function Portal({
+const Portal = forwardRef(({
     configs = [
         { radius: 0.48, tube: 0.045, opacity: 0.7, speed: 0.5, phase: 0 },
         { radius: 0.56, tube: 0.025, opacity: 0.4, speed: 0.7, phase: 1.0 },
@@ -51,19 +51,20 @@ export default function Portal({
     ],
     position = [0, 0, 0],
     scale = [1, 1, 1]
-}) {
+}, ref) => {
     const meshRefs = useRef([]);
 
-    useFrameRate((state) => {
+    // Use regular useFrame for smooth shader time updates to prevent flickering
+    useFrame((state) => {
         meshRefs.current.forEach((ref, i) => {
             if (ref && ref.material.uniforms) {
                 ref.material.uniforms.time.value = state.clock.elapsedTime;
             }
         });
-    }, 30); // Reduced from 60fps to 30fps
+    });
 
     return (
-        <group position={position} scale={scale}>
+        <group ref={ref} position={position} scale={scale}>
             {configs.map((cfg, i) => (
                 <mesh
                     key={i}
@@ -83,4 +84,6 @@ export default function Portal({
             ))}
         </group>
     );
-} 
+});
+
+export default Portal; 
