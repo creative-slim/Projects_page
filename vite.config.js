@@ -12,9 +12,9 @@ export default defineConfig({
     rollupOptions: {
       output: {
         manualChunks: undefined, // disables code splitting
-        entryFileNames: 'bundle.[hash].js', // cache-busting hash
-        chunkFileNames: 'bundle.[hash].js',
-        assetFileNames: 'bundle.[hash].[ext]'
+        entryFileNames: 'projects-page.[hash].js', // cache-busting hash
+        chunkFileNames: 'projects-page.[hash].js',
+        assetFileNames: 'projects-page.[hash].[ext]'
       }
     },
     cssCodeSplit: false, // inlines CSS into JS
@@ -24,7 +24,7 @@ export default defineConfig({
     lib: {
       entry: 'src/main.jsx', // your entry point
       name: 'MyWidget',      // global variable name (change as needed)
-      fileName: 'bundle',
+      fileName: 'projects-page',
       formats: ['iife']      // <--- THIS IS THE KEY
     }
   }

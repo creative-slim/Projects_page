@@ -14,6 +14,7 @@ import {
   MeshPortalMaterial,
   Stars,
   Center,
+  CameraControls,
 } from "@react-three/drei";
 
 import {
@@ -41,6 +42,7 @@ import { devLog, devWarn, devError } from './utils/devLog';
 import ErrorBoundary from './components/ErrorBoundary';
 import ThreeErrorBoundary from './components/ThreeErrorBoundary';
 import Env from "./Env";
+import FloatingLight from "./FloatingLight";
 
 gsap.registerPlugin(ScrollTrigger);
 
@@ -142,7 +144,11 @@ const App = ({ }) => {
           <color attach="background" args={["#000000"]} />
           <fog attach="fog" args={["#000000", 0, 50]} />
 
+
+/** CAMERA CONTROLS */
           {/* <OrbitControls /> */}
+          {/* <CameraControls /> */}
+
           {/* Render SceneSetup inside Canvas, pass headingRef */}
           <SceneSetup
             projectTextRef={projectTextRef}
@@ -231,13 +237,9 @@ function MouseCameraController({ isZoomed }) {
   const basePositionRef = useRef(new THREE.Vector3());
   const targetPositionRef = useRef(new THREE.Vector3());
 
-  // Mouse movement sensitivity and range
-  const SENSITIVITY = 0.3;
-  const MAX_OFFSET = 1.0;
-  const MIN_X_LIMIT = -0.5;
-  const MAX_X_LIMIT = 0.5;
-  const LERP_SPEED = 0.05;
-  const DAMPENING_ZONE = 0.3;
+  // Simplified parameters for horizontal movement, same as in MouseCameraController.jsx
+  const MAX_HORIZONTAL_OFFSET = 0.5; // Max distance camera can move from its base position
+  const LERP_SPEED = 0.05; // Smoothing factor for the camera movement
 
   useEffect(() => {
     const handleMouseMove = (event) => {
@@ -250,31 +252,15 @@ function MouseCameraController({ isZoomed }) {
 
   useFrame(() => {
     if (!isZoomed) {
-      // Update base position when GSAP moves camera
-      if (Math.abs(camera.position.x - basePositionRef.current.x) > 0.1) {
-        basePositionRef.current.copy(camera.position);
-      }
+      // The base X position is always 0, as defined by the GSAP animation targets.
+      const baseX = 0;
 
-      // Calculate target position
-      const targetX = basePositionRef.current.x + (mouseX.current * MAX_OFFSET * SENSITIVITY);
+      // Calculate the target X position based on the base X and mouse offset.
+      const targetX = baseX + mouseX.current * MAX_HORIZONTAL_OFFSET;
 
-      // Simple clamping with reduced dampening
-      const clampedX = Math.max(MIN_X_LIMIT, Math.min(MAX_X_LIMIT, targetX));
-
-      // Light dampening only at extreme edges
-      let dampeningFactor = 1;
-      if (mouseX.current < 0 && targetX < MIN_X_LIMIT + DAMPENING_ZONE) {
-        dampeningFactor = 0.7;
-      } else if (mouseX.current > 0 && targetX > MAX_X_LIMIT - DAMPENING_ZONE) {
-        dampeningFactor = 0.7;
-      }
-
-      // Apply dampening and set target
-      const finalX = basePositionRef.current.x + (clampedX - basePositionRef.current.x) * dampeningFactor;
-      targetPositionRef.current.set(finalX, camera.position.y, camera.position.z);
-
-      // Faster, more responsive camera movement
-      camera.position.lerp(targetPositionRef.current, LERP_SPEED);
+      // Lerp the camera's X position directly.
+      // This avoids interfering with Y and Z, which are controlled by GSAP.
+      camera.position.x = THREE.MathUtils.lerp(camera.position.x, targetX, LERP_SPEED);
     }
   });
 
@@ -524,6 +510,7 @@ const InnerScene = ({
           rotation={[-Math.PI / 2, 0, -Math.PI / 3]}
           scale={0.7}
         />
+        <FloatingLight position={[0, 5, -20]} />
       </group>
       {/* <ContactShadows
         frames={1}

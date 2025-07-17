@@ -23,7 +23,6 @@ export const useFrameRate = (callback, fps = 30, enabled = true) => {
             const actualDelta = currentTime - lastTimeRef.current;
 
             callback(state, actualDelta);
-
             frameRef.current = 0;
             lastTimeRef.current = currentTime;
         }

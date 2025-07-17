@@ -1,5 +1,5 @@
 import * as THREE from "three";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, useCallback } from "react";
 import { useFrame, useThree } from "@react-three/fiber";
 import {
   useCursor,
@@ -156,6 +156,14 @@ export default function Frames({
     }
   });
 
+  const triggerZoomOut = useCallback(() => {
+    if (!isAnimatingOut && selectedFrameId) {
+      devLog("Frames: Triggering zoom out, setting target FOV");
+      targetFovRef.current = initialFov;
+      setIsAnimatingOut(true);
+    }
+  }, [isAnimatingOut, selectedFrameId, initialFov]);
+
   // Effect to handle scroll UP while zoomed in
   useEffect(() => {
     if (selectedFrameId) {
@@ -169,15 +177,46 @@ export default function Frames({
       window.addEventListener("wheel", handleWheel, { passive: false });
       return () => window.removeEventListener("wheel", handleWheel);
     }
-  }, [selectedFrameId]);
+  }, [selectedFrameId, triggerZoomOut]);
 
-  const triggerZoomOut = () => {
-    if (!isAnimatingOut && selectedFrameId) {
-      devLog("Frames: Triggering zoom out, setting target FOV");
-      targetFovRef.current = initialFov;
-      setIsAnimatingOut(true);
+  // Effect to handle footer visibility for zoom out
+  useEffect(() => {
+    const footer = document.querySelector("#footer");
+    if (!footer) {
+      devWarn("Frames: #footer element not found for IntersectionObserver.");
+      return;
     }
-  };
+
+    if (selectedFrameId) {
+      const thresholdAttr = footer.getAttribute("data-footer-visibility-disable-click");
+      let threshold = 0.05; // Default 5%
+
+      if (thresholdAttr) {
+        const parsedValue = parseFloat(thresholdAttr);
+        if (!isNaN(parsedValue) && parsedValue >= 0 && parsedValue <= 100) {
+          threshold = parsedValue / 100;
+          devLog(`Frames: Using custom footer visibility threshold: ${threshold * 100}%`);
+        }
+      }
+
+      const observer = new IntersectionObserver(
+        ([entry]) => {
+          if (entry.isIntersecting) {
+            devLog("Frames: Footer is visible, triggering zoom out.");
+            triggerZoomOut();
+          }
+        },
+        { threshold } // Use dynamic threshold
+      );
+
+      observer.observe(footer);
+
+      return () => {
+        observer.unobserve(footer);
+        observer.disconnect();
+      };
+    }
+  }, [selectedFrameId, triggerZoomOut]);
 
   // Debug: get all slugs from images
   const allSlugs = images.map(img => img.slug);
