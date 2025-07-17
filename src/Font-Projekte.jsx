@@ -6,7 +6,7 @@ Files: ./public/models/Font-Projekte.glb [1.46MB] > /Users/slim-cd/Documents/_Pr
 
 import React from 'react'
 import { useFrame } from '@react-three/fiber'
-import { useHelper } from '@react-three/drei'
+import { Center, useHelper } from '@react-three/drei'
 import * as THREE from 'three'
 import { Color } from 'three'
 import { useModelLoader, preloadModel } from './utils/ModelLoader'
@@ -61,8 +61,10 @@ export function ProjekteText(props) {
         ref={directionalLightRef}
       />
       <object3D ref={targetRef} position={[0, 0, 0]} />
-      <mesh geometry={nodes.Text_projekte.geometry} material={materials.White} position={[0, -0.021, 0]} />
-      <mesh geometry={nodes.Bevel.geometry} material={materials['Material.001']} position={[0, -0.142, 0]} />
+      <Center>
+        <mesh geometry={nodes.Text_projekte.geometry} material={materials.White} position={[0, -0.021, 0]} />
+        <mesh geometry={nodes.Bevel.geometry} material={materials['Material.001']} position={[0, -0.142, 0]} />
+      </Center>
     </group>
   )
 }

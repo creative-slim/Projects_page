@@ -179,7 +179,7 @@ const App = ({ }) => {
           <Env />
           <ProjekteText
             ref={headingRef}
-            position={[-4.7, 7.8, -3]}
+            position={[0, 7.8, -3]}
             scale={1}
             rotation={[Math.PI / 2, 0, 0]}
             castShadow
